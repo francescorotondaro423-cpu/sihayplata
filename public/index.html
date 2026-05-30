@@ -1516,7 +1516,8 @@ const PAYMENT_META = {
    PROMOTION CARD — Supermercados v2
 ═══════════════════════════════════════ */
 function PromotionCard({ item, onReport, reported }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded,      setExpanded]      = useState(false);
+  const [showAllMetodos, setShowAllMetodos] = useState(false);
   const today        = new Date().getDay();
   const allDays      = !item.validDays || item.validDays.length === 7;
   const activeToday  = item.activeToday ?? (allDays || item.validDays?.includes(today));
@@ -1918,16 +1919,41 @@ function TransporteCard({ item, onReport, reported, onDetalle }) {
       </div>
 
       {/* Métodos de pago */}
-      <div style={{ padding:'0 16px 12px', display:'flex', flexWrap:'wrap', gap:5 }}>
-        {item.metodos_pago.map(m => {
-          const mm = METODO_META[m] || { label:m, bg:'#f1f5f9', tx:'#475569', bd:'#e2e8f0' };
-          return (
-            <span key={m} style={{ fontSize:11, fontWeight:700, padding:'4px 11px', borderRadius:4, background:mm.bg, color:mm.tx, border:`1px solid ${mm.bd}` }}>
-              {mm.label}
-            </span>
-          );
-        })}
-      </div>
+      {(() => {
+        const MAX = 3;
+        const metodos  = item.metodos_pago || [];
+        const visible  = showAllMetodos ? metodos : metodos.slice(0, MAX);
+        const hidden   = metodos.length - MAX;
+        return (
+          <div style={{ padding:'0 16px 12px', display:'flex', flexWrap:'wrap', gap:5, alignItems:'center' }}>
+            {visible.map(m => {
+              const mm = METODO_META[m] || { label:m, bg:'#f1f5f9', tx:'#475569', bd:'#e2e8f0' };
+              return (
+                <span key={m} style={{ fontSize:11, fontWeight:700, padding:'4px 11px', borderRadius:4, background:mm.bg, color:mm.tx, border:`1px solid ${mm.bd}` }}>
+                  {mm.label}
+                </span>
+              );
+            })}
+            {!showAllMetodos && hidden > 0 && (
+              <button onClick={() => setShowAllMetodos(true)} style={{
+                fontSize:11, fontWeight:700, padding:'4px 10px', borderRadius:4,
+                background:'var(--surface-2)', color:'var(--txt-2)', border:'1px solid var(--border)',
+                cursor:'pointer', fontFamily:'inherit', transition:'background .12s',
+              }}
+                onMouseEnter={e => e.currentTarget.style.background='var(--hover-bg)'}
+                onMouseLeave={e => e.currentTarget.style.background='var(--surface-2)'}
+              >+{hidden} más</button>
+            )}
+            {showAllMetodos && metodos.length > MAX && (
+              <button onClick={() => setShowAllMetodos(false)} style={{
+                fontSize:11, fontWeight:700, padding:'4px 10px', borderRadius:4,
+                background:'var(--surface-2)', color:'var(--txt-2)', border:'1px solid var(--border)',
+                cursor:'pointer', fontFamily:'inherit',
+              }}>Ver menos</button>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Condiciones */}
       <div style={{ padding:'10px 16px', background:'var(--surface-2)', borderTop:'1px solid var(--border-lt)' }}>
