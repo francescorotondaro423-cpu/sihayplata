@@ -4538,30 +4538,6 @@ function App() {
             {/* ══════════════════════════════════════════
                 SECCIÓN SUPERMERCADOS v3 — Aggregator con trazabilidad
             ══════════════════════════════════════════ */}
-            {/* Sub-nav Beneficios */}
-            {BENEFICIOS_KEYS.includes(activeTab) && (
-              <div className="nav-scroll" style={{ display:'flex', gap:0, marginBottom:16, borderBottom:'1px solid var(--border)' }}>
-                {[
-                  { key:'supermercados', label: lang==='es' ? 'Supermercados' : 'Supermarkets' },
-                  { key:'movilidad',     label: lang==='es' ? 'Movilidad' : 'Mobility' },
-                  { key:'combustibles',  label: lang==='es' ? 'Combustibles' : 'Fuel' },
-                  { key:'transporte',    label: lang==='es' ? 'Transporte' : 'Transport' },
-                ].map(s => {
-                  const on = activeTab === s.key;
-                  return (
-                    <button key={s.key} onClick={() => handleTab(s.key)} style={{
-                      padding:'8px 16px', cursor:'pointer', fontFamily:'inherit',
-                      fontSize:12, fontWeight: on ? 700 : 500,
-                      background:'none', border:'none',
-                      borderBottom:`2px solid ${on ? '#44685c' : 'transparent'}`,
-                      marginBottom:-1, color: on ? '#44685c' : '#64748b',
-                      whiteSpace:'nowrap', transition:'color .15s, border-color .15s',
-                    }}>{s.label}</button>
-                  );
-                })}
-              </div>
-            )}
-
             {activeTab === 'supermercados' && (() => {
               const TODAY    = new Date().getDay();
               const now      = new Date();
