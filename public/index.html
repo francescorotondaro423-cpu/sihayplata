@@ -3661,10 +3661,12 @@ function App() {
 
       {/* ════════ PAGE BODY — 3 columnas ════════ */}
       <div style={{ maxWidth:1300, margin: isMobile ? '16px auto 0' : '40px auto 0', padding:'0 20px 60px' }}>
-        <div className="page-grid">
+        <div className="page-grid" style={BENEFICIOS_KEYS.includes(activeTab) ? { gridTemplateColumns:'1fr 280px' } : {}}>
 
-          {/* ── COL IZQUIERDA: DÓLAR BLUE ── */}
+          {/* ── COL IZQUIERDA: DÓLAR BLUE — oculta en Beneficios ── */}
           {(() => {
+            if (BENEFICIOS_KEYS.includes(activeTab)) return <div style={{display:'none'}}/> ;
+
             const fmtP = n => n != null ? `$${Math.round(n).toLocaleString('es-AR')}` : '—';
             const fmtTs = ts => ts ? new Date(ts).toLocaleString('es-AR', {
               day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit',
