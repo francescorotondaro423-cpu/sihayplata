@@ -3651,7 +3651,7 @@ function App() {
       {/* ════════ SECONDARY NAV (no sticky, scrolls away) ════════ */}
       <div style={{ background:'var(--surface)', borderBottom:'1px solid var(--border)', transition:'background .35s' }}>
         <div style={{ maxWidth:1300, margin:'0 auto', padding:'0 20px' }}>
-          <div className="nav-scroll" style={{ display:'flex', justifyContent:'space-evenly', gap:0 }}>
+          <div style={{ display:'flex', justifyContent:'space-evenly', gap:0, overflowX:'auto' }}>
             {TABS.map(item => {
               const active = activeTab === item.key
                 || (item.key === 'beneficios' && BENEFICIOS_KEYS.includes(activeTab))
