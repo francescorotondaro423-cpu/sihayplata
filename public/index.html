@@ -3649,15 +3649,9 @@ function App() {
       ) : (<>
 
       {/* ════════ SECONDARY NAV (no sticky, scrolls away) ════════ */}
-      <div style={{ background:'var(--surface)', transition:'background .35s' }}>
+      <div style={{ background:'var(--surface)', borderBottom:'1px solid var(--border)', transition:'background .35s' }}>
         <div style={{ maxWidth:1300, margin:'0 auto', padding:'0 20px' }}>
-          {/* Línea verde degradada, alineada al ancho del contenido */}
-          <div style={{
-            height:1,
-            background:'linear-gradient(to right, transparent, #44685c 12%, #44685c 88%, transparent)',
-            marginBottom:0,
-          }} />
-          <div className="nav-scroll" style={{ display:'flex', gap:0 }}>
+          <div className="nav-scroll" style={{ display:'flex', justifyContent:'space-evenly', gap:0 }}>
             {TABS.map(item => {
               const active = activeTab === item.key
                 || (item.key === 'beneficios' && BENEFICIOS_KEYS.includes(activeTab))
@@ -3668,22 +3662,23 @@ function App() {
                   onClick={() => handleTab(item.key)}
                   className="sec-nav-btn"
                   style={{
-                    padding:'11px 18px',
+                    flex:1, padding:'14px 10px',
                     background:'none', border:'none',
                     borderBottom: `2px solid ${active ? '#44685c' : 'transparent'}`,
                     marginBottom: -1,
                     cursor:'pointer', fontFamily:'inherit',
-                    fontSize:13, fontWeight: active ? 700 : 500,
-                    color: active ? '#44685c' : '#64748b',
-                    display:'flex', alignItems:'center', gap:5,
+                    fontSize:12, fontWeight:800,
+                    letterSpacing:'.06em', textTransform:'uppercase',
+                    color: active ? '#44685c' : 'var(--txt-2)',
+                    display:'flex', alignItems:'center', justifyContent:'center', gap:5,
                     transition:'color .15s, border-color .15s',
                     whiteSpace:'nowrap',
                   }}
-                  onMouseEnter={e => { if (!active) { e.currentTarget.style.color='#334155'; } }}
-                  onMouseLeave={e => { if (!active) { e.currentTarget.style.color='#64748b'; } }}
+                  onMouseEnter={e => { if (!active) e.currentTarget.style.color='var(--txt-1)'; }}
+                  onMouseLeave={e => { if (!active) e.currentTarget.style.color='var(--txt-2)'; }}
                 >
                   {item.label}
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: active ? 1 : 0.55 }}>
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: active ? 1 : 0.45, flexShrink:0 }}>
                     <path d="M6 9l6 6 6-6"/>
                   </svg>
                 </button>
