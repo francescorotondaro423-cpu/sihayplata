@@ -163,6 +163,18 @@
     /* P5 — eliminar tap highlight azul/gris en iOS y Android */
     * { -webkit-tap-highlight-color: transparent; }
 
+    /* R4 — focus visible para accesibilidad por teclado */
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 2px solid #44685c; outline-offset: 2px;
+    }
+
+    /* R5 — sistema de radio de borde consistente */
+    :root {
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+    }
+
     /* P6 — scroll hint: fade derecho en navs scrolleables */
     .nav-scroll {
       -webkit-mask-image: linear-gradient(to right, black 88%, transparent 100%);
@@ -2433,6 +2445,8 @@ function App() {
   const handleTab = key => {
     if (key === 'variable' || key === 'garantizado' || key === 'especial') {
       setActiveTab('ars'); setFilter(key);
+    } else if (key === 'beneficios') {
+      setActiveTab('supermercados'); setFilter('all');
     } else {
       setActiveTab(key); setFilter('all');
     }
@@ -2441,19 +2455,15 @@ function App() {
 
   if (initLoading) return <LoadingScreen msg={loadMsg} />;
 
+  const BENEFICIOS_KEYS = ['supermercados','movilidad','combustibles','transporte'];
+
   const TABS = [
     { key:'ars',          label:t.tabARS        },
-    { key:'usd',          label:t.tabUSD        },
-    { key:'transporte',   label:t.tabTransporte },
-    { key:'movilidad',    label:t.tabMovilidad     },
-    { key:'combustibles', label:t.tabCombustibles  },
-    { key:'supermercados',label:t.tabSupermercados },
+    { key:'usd',          label: lang==='es' ? 'Dólares' : 'Dollars' },
+    { key:'beneficios',   label: lang==='es' ? 'Beneficios' : 'Benefits' },
     { key:'dolares',      label:t.tabDolares    },
     { key:'noticias',     label:t.tabNoticias   },
-    { key:'criptos',      label:t.tabCriptos    },
     { key:'aplicaciones', label:t.tabApps       },
-    { key:'carteras',     label:t.tabCarteras   },
-    { key:'calc',         label:t.tabCalc       },
   ];
 
   return (
@@ -3237,11 +3247,27 @@ function App() {
         <div className="ticker-track">
           {[0,1].map(i => (
             <span key={i}>
-              <span className="ticker-item">SIHAYPLATA, tu guía diaria de tasas, billeteras y plazos fijos.</span>
-              <span className="ticker-sep">•</span>
-              <span className="ticker-item">Cuidá tu bolsillo: compará rendimientos en tiempo real.</span>
-              <span className="ticker-sep">•</span>
-              <span className="ticker-item">Cotizaciones del Dólar Blue, MEP y CCL minuto a minuto.</span>
+              {arsData.badlar != null && <>
+                <span className="ticker-item">BADLAR: {arsData.badlar.toFixed(2)}% TNA</span>
+                <span className="ticker-sep">•</span>
+              </>}
+              {arsData.items[0] && <>
+                <span className="ticker-item">Mejor TNA ARS: {arsData.items[0].tna.toFixed(1)}% · {arsData.items[0].app}</span>
+                <span className="ticker-sep">•</span>
+              </>}
+              {dolares.blue?.venta && <>
+                <span className="ticker-item">Dólar Blue: ${Math.round(dolares.blue.venta).toLocaleString('es-AR')} venta</span>
+                <span className="ticker-sep">•</span>
+              </>}
+              {dolares.mep?.venta && <>
+                <span className="ticker-item">Dólar MEP: ${Math.round(dolares.mep.venta).toLocaleString('es-AR')} venta</span>
+                <span className="ticker-sep">•</span>
+              </>}
+              {dolares.oficial?.venta && <>
+                <span className="ticker-item">Dólar Oficial: ${Math.round(dolares.oficial.venta).toLocaleString('es-AR')} venta</span>
+                <span className="ticker-sep">•</span>
+              </>}
+              <span className="ticker-item">SIHAYPLATA — Tasas en tiempo real</span>
               <span className="ticker-sep">•</span>
             </span>
           ))}
@@ -3300,13 +3326,15 @@ function App() {
                 </div>
               )}
               {!isMobile && (
-                <div style={{ display:'flex', gap:0, borderLeft:'1px solid #e2e8f0', paddingLeft:10 }}>
+                <div style={{ display:'flex', gap:4, borderLeft:'1px solid #e2e8f0', paddingLeft:12 }}>
                   {['es','en'].map(l => (
                     <button key={l} onClick={() => setLang(l)} style={{
-                      background:'none', border:'none', cursor:'pointer', fontFamily:'inherit',
-                      fontWeight: lang===l ? 700 : 400,
-                      color: lang===l ? '#44685c' : '#94a3b8',
-                      fontSize:11, padding:'2px 5px',
+                      background: lang===l ? '#44685c' : 'none',
+                      border: lang===l ? 'none' : '1px solid var(--border)',
+                      borderRadius:4, cursor:'pointer', fontFamily:'inherit',
+                      fontWeight:700, color: lang===l ? '#fff' : '#94a3b8',
+                      fontSize:12, padding:'4px 10px', minHeight:32,
+                      transition:'all .15s',
                     }}>{l === 'es' ? 'ES' : 'EN'}</button>
                   ))}
                 </div>
@@ -3380,7 +3408,9 @@ function App() {
           }} />
           <div className="nav-scroll" style={{ display:'flex', gap:0 }}>
             {TABS.map(item => {
-              const active = activeTab === item.key;
+              const active = activeTab === item.key
+                || (item.key === 'beneficios' && BENEFICIOS_KEYS.includes(activeTab))
+                || (item.key === 'usd' && activeTab === 'criptos');
               return (
                 <button
                   key={item.key}
@@ -3413,6 +3443,68 @@ function App() {
       </div>
 
       {/* ════════ STATS BAR — datos clave always-visible ════════ */}
+      {arsData.badlar != null && (
+        <div style={{
+          background:'var(--surface)', borderBottom:'1px solid var(--border)',
+          transition:'background .35s',
+        }}>
+          <div style={{
+            maxWidth:1300, margin:'0 auto', padding:'0 20px',
+            display:'flex', alignItems:'stretch', overflowX:'auto',
+            scrollbarWidth:'none',
+          }}>
+            {[
+              {
+                label: 'BADLAR',
+                value: `${arsData.badlar.toFixed(2)}%`,
+                sub:   'TNA referencia',
+                color: '#1d4ed8',
+                onClick: null,
+              },
+              {
+                label:   arsData.items[0] ? `${lang==='es'?'Mejor TNA':'Best APR'} ARS` : null,
+                value:   arsData.items[0] ? `${arsData.items[0].tna.toFixed(1)}%` : null,
+                sub:     arsData.items[0]?.app,
+                color:   '#44685c',
+                onClick: () => handleTab('ars'),
+              },
+              {
+                label:   dolares.blue ? 'Dólar Blue' : null,
+                value:   dolares.blue ? `$${Math.round(dolares.blue.venta).toLocaleString('es-AR')}` : null,
+                sub:     'venta',
+                color:   '#44685c',
+                onClick: () => handleTab('dolares'),
+              },
+              {
+                label:   dolares.mep ? 'Dólar MEP' : null,
+                value:   dolares.mep ? `$${Math.round(dolares.mep.venta).toLocaleString('es-AR')}` : null,
+                sub:     'venta',
+                color:   '#7c3aed',
+                onClick: () => handleTab('dolares'),
+              },
+            ].filter(s => s.label).map((s, i) => (
+              <div key={i} onClick={s.onClick || undefined} style={{
+                padding: '8px 20px', borderRight:'1px solid var(--border-lt)',
+                display:'flex', flexDirection:'column', justifyContent:'center',
+                cursor: s.onClick ? 'pointer' : 'default',
+                transition:'background .12s', flexShrink:0,
+              }}
+                onMouseEnter={e => { if(s.onClick) e.currentTarget.style.background='var(--hover-bg)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background='transparent'; }}
+              >
+                <div style={{ fontSize:9, fontWeight:700, color:'var(--txt-3)', letterSpacing:'.1em', textTransform:'uppercase', marginBottom:1 }}>{s.label}</div>
+                <div style={{ fontSize:16, fontWeight:900, color:s.color, letterSpacing:'-.5px', lineHeight:1.1 }}>{s.value}</div>
+                <div style={{ fontSize:9, color:'var(--txt-3)', marginTop:1 }}>{s.sub}</div>
+              </div>
+            ))}
+            <div style={{ flex:1 }} />
+            <div style={{ padding:'8px 0', display:'flex', alignItems:'center', fontSize:9, color:'var(--txt-3)', fontWeight:600, letterSpacing:'.08em', whiteSpace:'nowrap' }}>
+              <span className="blink" style={{ width:5, height:5, borderRadius:'50%', background:'#44685c', display:'inline-block', marginRight:5, verticalAlign:'middle' }} />
+              {lang==='es' ? 'En tiempo real' : 'Live'}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ════════ PAGE BODY — 3 columnas ════════ */}
       <div style={{ maxWidth:1300, margin: isMobile ? '16px auto 0' : '40px auto 0', padding:'0 20px 60px' }}>
@@ -3603,6 +3695,28 @@ function App() {
                 </>
               );
             })()}
+
+            {/* Sub-nav USD / Criptos */}
+            {(activeTab === 'usd' || activeTab === 'criptos') && (
+              <div className="nav-scroll" style={{ display:'flex', gap:0, marginBottom:16, borderBottom:'1px solid var(--border)' }}>
+                {[
+                  { key:'usd',     label: lang==='es' ? 'Rendimientos USD' : 'USD Returns' },
+                  { key:'criptos', label: lang==='es' ? 'Crypto / Staking' : 'Crypto / Staking' },
+                ].map(s => {
+                  const on = activeTab === s.key;
+                  return (
+                    <button key={s.key} onClick={() => handleTab(s.key)} style={{
+                      padding:'8px 16px', cursor:'pointer', fontFamily:'inherit',
+                      fontSize:12, fontWeight: on ? 700 : 500,
+                      background:'none', border:'none',
+                      borderBottom:`2px solid ${on ? '#44685c' : 'transparent'}`,
+                      marginBottom:-1, color: on ? '#44685c' : '#64748b',
+                      whiteSpace:'nowrap', transition:'color .15s, border-color .15s',
+                    }}>{s.label}</button>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Ranking USD */}
             {showTable && (
@@ -4191,20 +4305,43 @@ function App() {
             {/* ── APLICACIONES ── */}
             {activeTab === 'aplicaciones' && (() => {
               const TYPE_LABEL = { cuenta:'Cta. Remunerada', fci:'FCI', plazo:'Plazo Fijo', crypto:'Crypto', on:'ON Corp.' };
+              const [appSearch, setAppSearch] = React.useState('');
+              const normalize = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+              const allApps = Object.entries(APP_META);
+              const filtered = appSearch.trim()
+                ? allApps.filter(([n]) => normalize(n).includes(normalize(appSearch)))
+                : allApps;
               return (
                 <div className="fade-in">
                   <div style={{ fontWeight:800, fontSize:20, color:'#0f172a', marginBottom:4 }}>Aplicaciones</div>
-                  <div style={{ fontSize:12, color:'#94a3b8', marginBottom:16 }}>Rendimientos actuales por plataforma</div>
+                  <div style={{ fontSize:12, color:'#94a3b8', marginBottom:12 }}>Rendimientos actuales por plataforma</div>
+
+                  {/* Buscador */}
+                  <div style={{ position:'relative', marginBottom:16 }}>
+                    <svg style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', flexShrink:0 }}
+                      width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--txt-3)" strokeWidth="2.5" strokeLinecap="round">
+                      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                    </svg>
+                    <input
+                      type="text" value={appSearch} onChange={e => setAppSearch(e.target.value)}
+                      placeholder={lang==='es' ? 'Buscar app…' : 'Search app…'}
+                      style={{
+                        width:'100%', paddingLeft:36, paddingRight:12, paddingTop:10, paddingBottom:10,
+                        border:'1px solid var(--border)', borderRadius:4, fontSize:16,
+                        fontFamily:'inherit', background:'var(--input-bg)', color:'var(--txt-1)', outline:'none',
+                      }}
+                    />
+                  </div>
 
                   <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:2, overflow:'hidden' }}>
                     {/* cabecera */}
                     <div style={{ display:'flex', alignItems:'center', padding:'9px 16px', background:'#fafafa', borderBottom:'2px solid #f1f5f9', gap:14 }}>
-                      <div style={{ flex:1 }} />
+                      <div style={{ flex:1, fontSize:11, fontWeight:700, color:'#94a3b8' }}>{filtered.length} apps</div>
                       <div style={{ width:72, textAlign:'right', fontSize:11, fontWeight:700, color:'#94a3b8', letterSpacing:'.07em' }}>ARS TNA</div>
                       {!isMobile && <div style={{ width:72, textAlign:'right', fontSize:11, fontWeight:700, color:'#94a3b8', letterSpacing:'.07em' }}>USD TNA</div>}
                     </div>
 
-                    {Object.entries(APP_META).map(([name], i, arr) => {
+                    {filtered.map(([name], i, arr) => {
                       const arsItem = arsData.items.find(p => p.app === name) || ARS_PROFILES.find(p => p.app === name);
                       const usdItem = usdData.items.find(p => p.app === name) || USD_PROFILES.find(p => p.app === name);
                       const types   = [arsItem?.type, usdItem?.type].filter(Boolean).map(tp => TYPE_LABEL[tp] || tp);
@@ -4249,6 +4386,30 @@ function App() {
             {/* ══════════════════════════════════════════
                 SECCIÓN SUPERMERCADOS v3 — Aggregator con trazabilidad
             ══════════════════════════════════════════ */}
+            {/* Sub-nav Beneficios */}
+            {BENEFICIOS_KEYS.includes(activeTab) && (
+              <div className="nav-scroll" style={{ display:'flex', gap:0, marginBottom:16, borderBottom:'1px solid var(--border)' }}>
+                {[
+                  { key:'supermercados', label: lang==='es' ? 'Supermercados' : 'Supermarkets' },
+                  { key:'movilidad',     label: lang==='es' ? 'Movilidad' : 'Mobility' },
+                  { key:'combustibles',  label: lang==='es' ? 'Combustibles' : 'Fuel' },
+                  { key:'transporte',    label: lang==='es' ? 'Transporte' : 'Transport' },
+                ].map(s => {
+                  const on = activeTab === s.key;
+                  return (
+                    <button key={s.key} onClick={() => handleTab(s.key)} style={{
+                      padding:'8px 16px', cursor:'pointer', fontFamily:'inherit',
+                      fontSize:12, fontWeight: on ? 700 : 500,
+                      background:'none', border:'none',
+                      borderBottom:`2px solid ${on ? '#44685c' : 'transparent'}`,
+                      marginBottom:-1, color: on ? '#44685c' : '#64748b',
+                      whiteSpace:'nowrap', transition:'color .15s, border-color .15s',
+                    }}>{s.label}</button>
+                  );
+                })}
+              </div>
+            )}
+
             {activeTab === 'supermercados' && (() => {
               const TODAY    = new Date().getDay();
               const now      = new Date();
@@ -5772,15 +5933,42 @@ function App() {
               );
             })()}
 
-            {(activeTab === 'carteras' || activeTab === 'calc') && (
-              <div style={{
-                background:'var(--surface)', border:'1px solid var(--border)', borderRadius:2,
-                padding:'56px 24px', textAlign:'center',
-              }}>
-                <div style={{ fontWeight:700, fontSize:16, color:'#0f172a', marginBottom:6 }}>{t.comingSoon}</div>
-                <div style={{ color:'#94a3b8', fontSize:13 }}>Esta sección estará disponible próximamente.</div>
-              </div>
-            )}
+            {(activeTab === 'carteras' || activeTab === 'calc') && (() => {
+              const label = activeTab === 'calc' ? 'Calculadora de Inversiones' : 'Gestión de Carteras';
+              const [notifyEmail, setNotifyEmail] = React.useState('');
+              const [notifySent,  setNotifySent]  = React.useState(false);
+              return (
+                <div style={{
+                  background:'var(--surface)', border:'1px solid var(--border)', borderRadius:2,
+                  padding:'48px 24px', textAlign:'center', maxWidth:480, margin:'0 auto',
+                }}>
+                  <div style={{ fontSize:40, marginBottom:16 }}>🔜</div>
+                  <div style={{ fontWeight:800, fontSize:18, color:'var(--txt-1)', marginBottom:8 }}>{label}</div>
+                  <div style={{ color:'var(--txt-2)', fontSize:13, marginBottom:24, lineHeight:1.6 }}>
+                    Estamos trabajando en esta sección. Te avisamos por email cuando esté lista.
+                  </div>
+                  {notifySent ? (
+                    <div style={{ color:'#44685c', fontWeight:700, fontSize:14 }}>✓ Te avisamos cuando esté disponible</div>
+                  ) : (
+                    <div style={{ display:'flex', gap:8, maxWidth:320, margin:'0 auto' }}>
+                      <input
+                        type="email" placeholder="tu@email.com" value={notifyEmail}
+                        onChange={e => setNotifyEmail(e.target.value)}
+                        style={{
+                          flex:1, padding:'10px 14px', border:'1px solid var(--border)',
+                          borderRadius:4, fontSize:16, fontFamily:'inherit',
+                          background:'var(--input-bg)', color:'var(--txt-1)', outline:'none',
+                        }}
+                      />
+                      <button onClick={() => notifyEmail.includes('@') && setNotifySent(true)} style={{
+                        padding:'10px 18px', background:'#44685c', color:'#fff', border:'none',
+                        borderRadius:4, cursor:'pointer', fontFamily:'inherit', fontWeight:700, fontSize:13,
+                      }}>Avisame</button>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Disclaimer */}
             <div style={{ marginTop:20, padding:'10px 14px', background:'var(--surface-3)', border:'1px solid var(--border-lt)', borderRadius:2 }}>
@@ -5794,17 +5982,7 @@ function App() {
 
         </div>
 
-        {/* ═══ BANNER PUBLICIDAD HORIZONTAL ═══ */}
-        <div style={{ marginTop:24 }}>
-          <div style={{ fontSize:9, color:'#94a3b8', letterSpacing:'.08em', marginBottom:6, textAlign:'center' }}>{t.adLabel}</div>
-          <div style={{ background:'#f8fafc', border:'1px dashed #e2e8f0', borderRadius:2, padding:'14px 24px', display:'flex', alignItems:'center', justifyContent:'center' }}>
-            <div style={{
-              width:'100%', maxWidth:970, height:90, background:'#e9eef5', borderRadius:2,
-              display:'flex', alignItems:'center', justifyContent:'center',
-              color:'#94a3b8', fontSize:13, fontWeight:600,
-            }}>970×90</div>
-          </div>
-        </div>
+        {/* ═══ BANNER PUBLICIDAD — oculto hasta tener contenido real ═══ */}
       </div>
 
       {/* ═══════════════════════════════════════════════════
@@ -5833,7 +6011,7 @@ function App() {
               { label: 'Billeteras Digitales',  onClick: () => go('ars', 'cuenta') },
               { label: 'Dólar Blue y MEP',      onClick: () => go('dolares', 'all') },
               { label: 'Rendimientos USD',      onClick: () => go('usd', 'all') },
-              { label: 'Criptos',               onClick: () => go('criptos', 'all') },
+              { label: 'Criptos',               onClick: () => { setActiveTab('criptos'); window.scrollTo({top:0,behavior:'smooth'}); } },
               { label: 'Supermercados',         onClick: () => go('supermercados', 'all') },
               { label: 'Movilidad',             onClick: () => go('movilidad', 'all') },
               { label: 'Combustibles',          onClick: () => go('combustibles', 'all') },
