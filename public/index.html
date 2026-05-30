@@ -2842,61 +2842,79 @@ function App() {
         </div>
 
         {/* ── Contenido ── */}
-        <div className="splash-card" style={{ position:'relative', maxWidth:500, width:'100%', marginRight:'auto' }}>
+        <div className="splash-card" style={{ position:'relative', maxWidth:520, width:'100%', marginRight:'auto' }}>
 
           {/* Logo */}
-          <div style={{ marginBottom:32 }}>
-            <img src="/titulo6.png" alt="SiHayPlata" style={{ height:52, width:'auto' }} />
+          <div style={{ marginBottom:36 }}>
+            <img src="/titulo6.png" alt="SiHayPlata" style={{ height:64, width:'auto' }} />
+          </div>
+
+          {/* Tag */}
+          <div style={{ marginBottom:14 }}>
+            <span style={{
+              display:'inline-block', fontSize:11, fontWeight:800,
+              color:'#44685c', letterSpacing:'.18em', textTransform:'uppercase',
+              background:'#f0fdf4', border:'1.5px solid #86efac',
+              borderRadius:20, padding:'5px 14px',
+            }}>
+              Nueva sección disponible
+            </span>
           </div>
 
           {/* Titular */}
-          <div style={{ marginBottom:32 }}>
-            <div style={{ fontSize:10, fontWeight:800, color:'#44685c', letterSpacing:'.22em', textTransform:'uppercase', marginBottom:10 }}>
-              Nueva sección disponible
-            </div>
-            <h1 style={{ margin:0, fontSize:'clamp(40px,7vw,68px)', fontWeight:900, color:'#0f172a', letterSpacing:'-2px', lineHeight:1.05 }}>
+          <div style={{ marginBottom:20 }}>
+            <h1 style={{ margin:0, fontSize:'clamp(52px,8vw,86px)', fontWeight:900, color:'#0f172a', letterSpacing:'-3px', lineHeight:1 }}>
               Beneficios
             </h1>
-            <p style={{ margin:'14px 0 0', fontSize:16, color:'#64748b', lineHeight:1.65, maxWidth:360 }}>
-              Descubrí cuánto podés ahorrar en supermercados, combustibles y transporte según la billetera que usás.
-            </p>
           </div>
 
+          {/* Descripción */}
+          <p style={{ margin:'0 0 32px', fontSize:18, color:'#475569', lineHeight:1.6, maxWidth:380, fontWeight:400 }}>
+            Descubrí cuánto podés ahorrar en supermercados, combustibles y transporte según la billetera que usás.
+          </p>
+
           {/* Categorías */}
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:8, marginBottom:32 }}>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:10, marginBottom:36 }}>
             {cats.map(cat => (
               <div key={cat.label} style={{
-                background:'#f8fafc', border:'1px solid #e2e8f0',
-                borderRadius:10, padding:'14px 16px',
-                display:'flex', alignItems:'center', gap:12,
+                background:'#fff', border:'2px solid #e2e8f0',
+                borderRadius:12, padding:'16px 18px',
+                display:'flex', alignItems:'center', gap:14,
+                boxShadow:'0 2px 8px rgba(0,0,0,.04)',
               }}>
-                <div style={{ color:'#44685c', flexShrink:0 }}>{cat.icon}</div>
+                <div style={{
+                  width:42, height:42, borderRadius:10, flexShrink:0,
+                  background:'#f0fdf4', display:'flex', alignItems:'center', justifyContent:'center',
+                  color:'#44685c',
+                }}>{cat.icon}</div>
                 <div>
-                  <div style={{ fontSize:13, fontWeight:700, color:'#0f172a' }}>{cat.label}</div>
-                  <div style={{ fontSize:11, color:'#94a3b8', marginTop:2, lineHeight:1.3 }}>{cat.sub}</div>
+                  <div style={{ fontSize:14, fontWeight:800, color:'#0f172a' }}>{cat.label}</div>
+                  <div style={{ fontSize:12, color:'#94a3b8', marginTop:3, lineHeight:1.35 }}>{cat.sub}</div>
                 </div>
               </div>
             ))}
           </div>
 
           {/* Botones */}
-          <div style={{ display:'flex', gap:10 }}>
+          <div style={{ display:'flex', gap:12 }}>
             <button onClick={() => closeSplash(true)} style={{
-              flex:2, padding:'15px 20px', borderRadius:10, cursor:'pointer',
-              fontFamily:'inherit', fontWeight:800, fontSize:15,
+              flex:2, padding:'17px 24px', borderRadius:12, cursor:'pointer',
+              fontFamily:'inherit', fontWeight:800, fontSize:16,
               background:'#44685c', color:'#fff', border:'none',
-              transition:'background .15s, transform .1s',
+              boxShadow:'0 4px 20px rgba(68,104,92,.35)',
+              transition:'background .15s, transform .1s, box-shadow .15s',
+              letterSpacing:'.01em',
             }}
-              onMouseEnter={e => e.currentTarget.style.background='#2d4a40'}
-              onMouseLeave={e => e.currentTarget.style.background='#44685c'}
+              onMouseEnter={e => { e.currentTarget.style.background='#2d4a40'; e.currentTarget.style.boxShadow='0 6px 24px rgba(68,104,92,.45)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background='#44685c'; e.currentTarget.style.boxShadow='0 4px 20px rgba(68,104,92,.35)'; }}
               onMouseDown={e => e.currentTarget.style.transform='scale(.98)'}
               onMouseUp={e => e.currentTarget.style.transform='scale(1)'}
             >Explorar Beneficios →</button>
             <button onClick={() => closeSplash(false)} style={{
-              flex:1, padding:'15px 16px', borderRadius:10, cursor:'pointer',
-              fontFamily:'inherit', fontWeight:600, fontSize:14,
+              flex:'0 0 auto', padding:'17px 24px', borderRadius:12, cursor:'pointer',
+              fontFamily:'inherit', fontWeight:600, fontSize:15,
               background:'none', color:'#94a3b8',
-              border:'1px solid #e2e8f0',
+              border:'2px solid #e2e8f0',
               transition:'border-color .15s, color .15s',
             }}
               onMouseEnter={e => { e.currentTarget.style.borderColor='#44685c'; e.currentTarget.style.color='#44685c'; }}
