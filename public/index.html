@@ -160,6 +160,12 @@
     /* ── base overflow prevention ── */
     html, body { overflow-x: hidden; max-width: 100%; }
 
+    /* ── splash animations ── */
+    @keyframes splashBgIn  { from{opacity:0} to{opacity:1} }
+    @keyframes splashCardIn { from{opacity:0;transform:translateY(32px)} to{opacity:1;transform:none} }
+    .splash-bg   { animation: splashBgIn   .5s ease-out both; }
+    .splash-card { animation: splashCardIn .65s cubic-bezier(.22,.68,0,1.2) .15s both; }
+
     /* P5 — eliminar tap highlight azul/gris en iOS y Android */
     * { -webkit-tap-highlight-color: transparent; }
 
@@ -2707,112 +2713,122 @@ function App() {
 
   if (initLoading) return <LoadingScreen msg={loadMsg} />;
 
-  if (showSplash) return (
-    <div style={{
-      position:'fixed', inset:0, zIndex:200,
-      background:'var(--bg)',
-      display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
-      padding:'24px',
-      fontFamily:'Inter, sans-serif',
-    }}>
-      {/* Fondo decorativo */}
-      <div style={{
-        position:'absolute', inset:0, overflow:'hidden', pointerEvents:'none',
+  if (showSplash) {
+    const cats = [
+      {
+        label:'Supermercados', sub:'Descuentos en Carrefour, Día, Coto y más',
+        icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>,
+      },
+      {
+        label:'Combustibles', sub:'YPF, Shell, Axion, Gulf, Puma',
+        icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 22V8l7-6 7 6v14"/><line x1="3" y1="22" x2="21" y2="22"/><rect x="8" y="14" width="4" height="8"/><path d="M17 14h1a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2"/></svg>,
+      },
+      {
+        label:'Movilidad', sub:'Subte, colectivo, peaje y más',
+        icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>,
+      },
+      {
+        label:'Transporte', sub:'Beneficios en transporte público',
+        icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>,
+      },
+    ];
+
+    return (
+      <div className="splash-bg" style={{
+        position:'fixed', inset:0, zIndex:200,
+        background:'linear-gradient(160deg, #0d1f18 0%, #1a3028 50%, #0f172a 100%)',
+        display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+        padding:'clamp(20px,5vw,48px)',
+        fontFamily:'Inter, sans-serif',
+        overflow:'hidden',
       }}>
-        <div style={{ position:'absolute', top:-120, right:-120, width:400, height:400, borderRadius:'50%', background:'radial-gradient(circle, #44685c18 0%, transparent 70%)' }} />
-        <div style={{ position:'absolute', bottom:-80, left:-80, width:300, height:300, borderRadius:'50%', background:'radial-gradient(circle, #44685c12 0%, transparent 70%)' }} />
-      </div>
 
-      <div style={{ position:'relative', maxWidth:480, width:'100%' }}>
-
-        {/* Logo */}
-        <div style={{ textAlign:'center', marginBottom:32 }}>
-          <img src="/titulo6.png" alt="SiHayPlata" style={{ height:72, width:'auto' }} />
+        {/* Círculos decorativos de fondo */}
+        <div style={{ position:'absolute', inset:0, pointerEvents:'none', overflow:'hidden' }}>
+          <div style={{ position:'absolute', top:'-15%', right:'-10%', width:'50vw', height:'50vw', borderRadius:'50%', background:'radial-gradient(circle, rgba(68,104,92,.25) 0%, transparent 65%)' }} />
+          <div style={{ position:'absolute', bottom:'-10%', left:'-8%', width:'40vw', height:'40vw', borderRadius:'50%', background:'radial-gradient(circle, rgba(68,104,92,.18) 0%, transparent 65%)' }} />
+          <div style={{ position:'absolute', top:'40%', left:'30%', width:'30vw', height:'30vw', borderRadius:'50%', background:'radial-gradient(circle, rgba(68,104,92,.08) 0%, transparent 65%)' }} />
         </div>
 
-        {/* Card principal */}
-        <div style={{
-          background:'var(--surface)', borderRadius:16,
-          border:'1px solid var(--border)',
-          boxShadow:'0 24px 64px rgba(0,0,0,.10)',
-          overflow:'hidden',
-        }}>
+        <div className="splash-card" style={{ position:'relative', maxWidth:560, width:'100%' }}>
 
-          {/* Header verde */}
-          <div style={{
-            background:'linear-gradient(135deg, #44685c, #2d4a40)',
-            padding:'28px 28px 24px',
-          }}>
-            <div style={{ fontSize:10, fontWeight:800, color:'rgba(255,255,255,.6)', letterSpacing:'.16em', textTransform:'uppercase', marginBottom:8 }}>
-              Nueva sección disponible
+          {/* Logo */}
+          <div style={{ textAlign:'center', marginBottom:36 }}>
+            <img src="/titulo6.png" alt="SiHayPlata" style={{ height:60, width:'auto', filter:'brightness(0) invert(1)', opacity:.9 }} />
+          </div>
+
+          {/* Titular */}
+          <div style={{ textAlign:'center', marginBottom:40 }}>
+            <div style={{ fontSize:11, fontWeight:800, color:'rgba(255,255,255,.45)', letterSpacing:'.22em', textTransform:'uppercase', marginBottom:12 }}>
+              Nueva sección
             </div>
-            <h1 style={{ margin:0, fontSize:28, fontWeight:900, color:'#fff', lineHeight:1.2, letterSpacing:'-.5px' }}>
+            <h1 style={{ margin:0, fontSize:'clamp(44px,8vw,72px)', fontWeight:900, color:'#fff', letterSpacing:'-2px', lineHeight:1 }}>
               Beneficios
             </h1>
-            <p style={{ margin:'10px 0 0', fontSize:14, color:'rgba(255,255,255,.75)', lineHeight:1.6 }}>
-              Descubrí dónde te conviene pagar con tu billetera o tarjeta — supermercados, nafta, transporte y más.
+            <p style={{ margin:'16px auto 0', fontSize:'clamp(14px,2vw,16px)', color:'rgba(255,255,255,.6)', lineHeight:1.65, maxWidth:380 }}>
+              Descubrí cuánto podés ahorrar en supermercados, combustibles y transporte según la billetera que usás.
             </p>
           </div>
 
           {/* Categorías */}
-          <div style={{ padding:'20px 24px', display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
-            {[
-              { icon:'🛒', label:'Supermercados', sub:'Descuentos en Carrefour, Día, Coto y más' },
-              { icon:'⛽', label:'Combustibles',  sub:'YPF, Shell, Axion, Gulf, Puma' },
-              { icon:'🚗', label:'Movilidad',     sub:'Subte, colectivo, peaje y más' },
-              { icon:'🚌', label:'Transporte',    sub:'Beneficios en transporte público' },
-            ].map(cat => (
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginBottom:36 }}>
+            {cats.map(cat => (
               <div key={cat.label} style={{
-                background:'var(--surface-2)', borderRadius:10,
-                border:'1px solid var(--border)',
-                padding:'14px 14px 12px',
+                background:'rgba(255,255,255,.06)',
+                border:'1px solid rgba(255,255,255,.1)',
+                borderRadius:12, padding:'18px 12px 14px',
+                textAlign:'center', backdropFilter:'blur(8px)',
               }}>
-                <div style={{ fontSize:24, marginBottom:6 }}>{cat.icon}</div>
-                <div style={{ fontSize:13, fontWeight:700, color:'var(--txt-1)', lineHeight:1.2 }}>{cat.label}</div>
-                <div style={{ fontSize:11, color:'var(--txt-3)', marginTop:3, lineHeight:1.4 }}>{cat.sub}</div>
+                <div style={{ color:'rgba(255,255,255,.7)', marginBottom:10, display:'flex', justifyContent:'center' }}>
+                  {cat.icon}
+                </div>
+                <div style={{ fontSize:12, fontWeight:700, color:'#fff', lineHeight:1.3 }}>{cat.label}</div>
+                <div style={{ fontSize:10, color:'rgba(255,255,255,.4)', marginTop:4, lineHeight:1.4 }}>{cat.sub}</div>
               </div>
             ))}
           </div>
 
           {/* Botones */}
-          <div style={{ padding:'0 24px 24px', display:'flex', gap:10 }}>
+          <div style={{ display:'flex', gap:12, flexWrap:'wrap' }}>
             <button
               onClick={() => { setShowSplash(false); handleTab('beneficios'); }}
               style={{
-                flex:2, padding:'14px 0', borderRadius:8, cursor:'pointer',
-                fontFamily:'inherit', fontWeight:800, fontSize:15,
+                flex:2, minWidth:180, padding:'16px 24px', borderRadius:10,
+                cursor:'pointer', fontFamily:'inherit', fontWeight:800, fontSize:15,
                 background:'#44685c', color:'#fff', border:'none',
-                transition:'background .15s',
+                transition:'background .15s, transform .1s',
+                letterSpacing:'.02em',
               }}
               onMouseEnter={e => e.currentTarget.style.background='#2d4a40'}
               onMouseLeave={e => e.currentTarget.style.background='#44685c'}
+              onMouseDown={e => e.currentTarget.style.transform='scale(.98)'}
+              onMouseUp={e => e.currentTarget.style.transform='scale(1)'}
             >
-              Acceder a Beneficios
+              Explorar Beneficios →
             </button>
             <button
               onClick={() => setShowSplash(false)}
               style={{
-                flex:1, padding:'14px 0', borderRadius:8, cursor:'pointer',
-                fontFamily:'inherit', fontWeight:600, fontSize:14,
-                background:'none', color:'var(--txt-3)',
-                border:'1px solid var(--border)',
-                transition:'border-color .15s, color .15s',
+                flex:1, minWidth:100, padding:'16px 20px', borderRadius:10,
+                cursor:'pointer', fontFamily:'inherit', fontWeight:600, fontSize:14,
+                background:'rgba(255,255,255,.07)', color:'rgba(255,255,255,.55)',
+                border:'1px solid rgba(255,255,255,.12)',
+                transition:'background .15s, color .15s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor='#44685c'; e.currentTarget.style.color='#44685c'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor='var(--border)'; e.currentTarget.style.color='var(--txt-3)'; }}
+              onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,.12)'; e.currentTarget.style.color='rgba(255,255,255,.85)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,.07)'; e.currentTarget.style.color='rgba(255,255,255,.55)'; }}
             >
               Omitir
             </button>
           </div>
-        </div>
 
-        {/* Pie */}
-        <p style={{ textAlign:'center', fontSize:11, color:'var(--txt-3)', marginTop:16 }}>
-          Podés acceder a Beneficios en cualquier momento desde el menú de navegación.
-        </p>
+          <p style={{ textAlign:'center', fontSize:11, color:'rgba(255,255,255,.25)', marginTop:20, lineHeight:1.5 }}>
+            Podés volver a Beneficios en cualquier momento desde el menú
+          </p>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   const BENEFICIOS_KEYS = ['supermercados','movilidad','combustibles','transporte'];
 
