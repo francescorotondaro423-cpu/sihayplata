@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinRank AR — Top Rendimientos Financieros Argentina</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; }
+    body { font-family: 'Inter', sans-serif; background: #f1f5f9; }
+
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+    @keyframes spin-smooth { to { transform: rotate(360deg); } }
+    @keyframes pulse-dot   { 0%,100%{opacity:1} 50%{opacity:.4} }
+    @keyframes slide-up    { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fade-in     { from{opacity:0} to{opacity:1} }
+
+    .spin     { animation: spin-smooth .9s linear infinite; display:inline-block; }
+    .live-dot { animation: pulse-dot 1.5s ease-in-out infinite; }
+    .slide-up { animation: slide-up .3s ease-out both; }
+    .fade-in  { animation: fade-in .25s ease-out; }
+
+    .rank-row { transition: background .12s; cursor: default; }
+    .rank-row:hover { background: #f8fafc !important; }
+
+    .ticker-card { transition: box-shadow .2s, transform .2s; }
+    .ticker-card:hover { box-shadow: 0 3px 12px rgba(0,0,0,.09); transform: translateY(-1px); }
+
+    .filter-chip { transition: all .15s; }
+
+    .modal-bg {
+      position: fixed; inset: 0; z-index: 60;
+      background: rgba(0,0,0,.45); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center; padding: 16px;
+    }
+
+    input[type=range] { accent-color: #16a34a; }
+    input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback } = React;
+
+/* ─── TRANSLATIONS ─── */
+const T = {
+  es: {
+    appSub:'Top rendimientos financieros · Argentina',
+    tabHome:'Inicio', tabARS:'Pesos (ARS)', tabUSD:'Dólares (USD)',
+    tabCarteras:'Carteras', tabCalc:'Calculadora',
+    btnUser:'Usuario', btnAdmin:'Admin',
+    colEntidad:'Entidad', colProducto:'Producto', colTNA:'TNA%',
+    colLimite:'Límite Remunerado', colVar:'Variación 7D',
+    dataRealtime:'Datos en tiempo real', lastUpdate:'Última actualización',
+    source:'Fuente', syncBtn:'Actualizar', syncing:'Actualizando…',
+    noResults:'Sin resultados para este filtro', comingSoon:'Próximamente',
+    disclaimer:'Las tasas son referenciales y pueden cambiar sin previo aviso. No constituyen asesoramiento financiero. Verificar en la plataforma oficial antes de invertir.',
+    newsTitle:'Últimas Noticias Financieras', adLabel:'Publicidad',
+    dolBlue:'Dólar Blue', dolMEP:'Dólar MEP', dolCCL:'Dólar CCL',
+    tnaProm:'TNA Promedio (ARS)', cambio24h:'24h cambio',
+    compra:'Compra', venta:'Venta',
+    instCuenta:'Cuenta Remunerada', instFCI:'FCI Money Market',
+    instPlazo:'Plazo Fijo', instCrypto:'Crypto / Staking', instON:'ON Corporativas',
+    simTitle:'Simulador de rendimiento', simAmount:'Monto a invertir',
+    simDays:'Plazo', simGain:'Ganancia estimada', simTotal:'Total al vencimiento',
+    simNote:'* Cálculo diario simple sin reinversión. No incluye impuestos. Solo referencial.',
+    simClose:'Cerrar', simGo:'Ir a la App →', simBtn:'Simular',
+    promo:'PROMO', promoDays:'90 días',
+    statTop:'Mayor TNA', statAvg:'TNA Promedio', statCount:'Apps listadas',
+  },
+  en: {
+    appSub:'Top financial returns · Argentina',
+    tabHome:'Home', tabARS:'Pesos (ARS)', tabUSD:'Dollars (USD)',
+    tabCarteras:'Portfolios', tabCalc:'Calculator',
+    btnUser:'User', btnAdmin:'Admin',
+    colEntidad:'Institution', colProducto:'Product', colTNA:'APR%',
+    colLimite:'Remunerated Limit', colVar:'7D Change',
+    dataRealtime:'Real-time data', lastUpdate:'Last update',
+    source:'Source', syncBtn:'Refresh', syncing:'Refreshing…',
+    noResults:'No results for this filter', comingSoon:'Coming soon',
+    disclaimer:'Rates are indicative and may change without notice. Not financial advice. Verify on the official platform before investing.',
+    newsTitle:'Latest Financial News', adLabel:'Advertisement',
+    dolBlue:'Blue Dollar', dolMEP:'MEP Dollar', dolCCL:'CCL Dollar',
+    tnaProm:'Avg APR (ARS)', cambio24h:'24h change',
+    compra:'Buy', venta:'Sell',
+    instCuenta:'Savings Account', instFCI:'Money Market Fund',
+    instPlazo:'Fixed Term', instCrypto:'Crypto / Staking', instON:'Corporate Bonds',
+    simTitle:'Return Simulator', simAmount:'Investment amount',
+    simDays:'Term', simGain:'Estimated gain', simTotal:'Total at maturity',
+    simNote:'* Simple daily calculation without reinvestment. Taxes not included. Reference only.',
+    simClose:'Close', simGo:'Go to App →', simBtn:'Simulate',
+    promo:'PROMO', promoDays:'90 days',
+    statTop:'Top APR', statAvg:'Avg APR', statCount:'Apps listed',
+  },
+};
+
+/* ─── API HELPERS ─── */
+async function tFetch(url, ms = 7000) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const r = await fetch(url, { signal: ctrl.signal });
+    clearTimeout(t);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return await r.json();
+  } catch(e) { clearTimeout(t); throw e; }
+}
+
+async function apiFetch(url) {
+  try { return await tFetch(url, 5000); } catch {}
+  try { return await tFetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, 8000); } catch {}
+  try { return await tFetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`, 8000); } catch {}
+  throw new Error(`unreachable: ${url}`);
+}
+
+const FMT = d => d.toISOString().slice(0,10);
+const TODAY = () => FMT(new Date());
+const AGO   = n  => FMT(new Date(Date.now() - n * 86400000));
+
+async function bcraVar(varId) {
+  const url = `https://api.bcra.gob.ar/estadisticas/v4.0/monetarias/${varId}?desde=${AGO(20)}&hasta=${TODAY()}`;
+  const j = await apiFetch(url);
+  const detalle = j?.results?.[0]?.detalle;
+  if (!detalle?.length) throw new Error(`BCRA var${varId}: sin datos`);
+  return detalle[0].valor;
+}
+
+async function fetchDolares() {
+  const res = {};
+  await Promise.allSettled([
+    tFetch('https://dolarapi.com/v1/dolares/blue', 5000).then(d => res.blue = d),
+    tFetch('https://dolarapi.com/v1/dolares/bolsa', 5000).then(d => res.mep  = d),
+    tFetch('https://dolarapi.com/v1/dolares/contadoconliqui', 5000).then(d => res.ccl  = d),
+  ]);
+  return res;
+}
+
+/* ─── DATA PROFILES ─── */
+const ARS_PROFILES = [
+  { app:'Ualá',          type:'cuenta', spread:+4.0, promo:true,  limit:'Hasta $3.000.000', info:'Tasa promo 90 días, nuevos usuarios' },
+  { app:'Cocos Capital', type:'fci',    spread:+1.5, promo:false, limit:'Sin Límite',        info:'FCI Money Market T+0' },
+  { app:'Naranja X',     type:'cuenta', spread:+0.5, promo:false, limit:'Hasta $750.000',    info:'Tope mensual al saldo remunerado' },
+  { app:'Personal Pay',  type:'cuenta', spread:-1.0, promo:false, limit:'Sin Límite',        info:'Nivel 2+ de cuenta requerido' },
+  { app:'Mercado Pago',  type:'fci',    spread:-3.7, promo:false, limit:'Sin Límite',        info:'FCI Mercado Fondo T+0 · verificado' },
+  { app:'Fiwind',        type:'plazo',  spread:-4.0, promo:false, limit:'Sin Límite',        info:'Plazo Fijo Digital mínimo 30d' },
+  { app:'Brubank',       type:'cuenta', spread:-5.0, promo:false, limit:'Hasta $500.000',    info:'Acreditación automática 24/7' },
+  { app:'Lemon Cash',    type:'fci',    spread:-6.0, promo:false, limit:'Sin Límite',        info:'Fondo Lemon Ahorro T+0' },
+];
+
+const USD_PROFILES = [
+  { app:'Fiwind',        type:'plazo',  tna:7.5, promo:false, limit:'Hasta U$S 50.000', info:'Plazo Fijo USD, mínimo 30 días' },
+  { app:'Buenbit',       type:'crypto', tna:6.8, promo:true,  limit:'Sin Límite',       info:'USDT/USDC yield, liquidez semanal' },
+  { app:'Lemon Cash',    type:'crypto', tna:5.5, promo:false, limit:'Sin Límite',       info:'USDT Staking pool, retiro en 72hs' },
+  { app:'Cocos Capital', type:'on',     tna:5.0, promo:false, limit:'Sin Límite',       info:'ON Corporativas en dólares' },
+  { app:'Belo',          type:'crypto', tna:4.5, promo:false, limit:'Sin Límite',       info:'USDT/USDC, acreditación diaria' },
+  { app:'Ripio',         type:'crypto', tna:4.0, promo:false, limit:'Hasta U$S 10.000', info:'Ripio Earn, 7 días lock-up' },
+  { app:'Naranja X',     type:'plazo',  tna:3.5, promo:false, limit:'Hasta U$S 5.000',  info:'Plazo Fijo USD, mínimo 30 días' },
+  { app:'Mercado Pago',  type:'fci',    tna:3.0, promo:false, limit:'Sin Límite',       info:'Fondo USD disponible' },
+];
+
+async function loadARS() {
+  const badlar = await bcraVar(7);
+  const items = ARS_PROFILES.map(p => ({
+    ...p,
+    tna:    parseFloat((badlar + p.spread).toFixed(2)),
+    src:    'BCRA',
+    change: 0,
+  })).sort((a,b) => b.tna - a.tna).map((x,i) => ({ ...x, id: i+1 }));
+  return { items, badlar, sourceLabel: `BCRA v4.0 · BADLAR ${badlar.toFixed(2)}% · spreads estimados` };
+}
+
+async function loadUSD() {
+  const items = USD_PROFILES.map((p,i) => ({ ...p, src:'~ref', change:0, id:i+1 }));
+  return { items, sourceLabel: 'Sin API pública USD · verificar en cada plataforma' };
+}
+
+/* ─── METADATA ─── */
+const APP_META = {
+  'Ualá':          { abbr:'UA', bg:'linear-gradient(135deg,#ff6b35,#f97316)', fg:'#fff' },
+  'Cocos Capital': { abbr:'CC', bg:'linear-gradient(135deg,#1e3a5f,#2563eb)', fg:'#fff' },
+  'Naranja X':     { abbr:'NX', bg:'linear-gradient(135deg,#ea580c,#fb923c)', fg:'#fff' },
+  'Personal Pay':  { abbr:'PP', bg:'linear-gradient(135deg,#0050d8,#60a5fa)', fg:'#fff' },
+  'Mercado Pago':  { abbr:'MP', bg:'linear-gradient(135deg,#009de0,#22d3ee)', fg:'#fff' },
+  'Lemon Cash':    { abbr:'LC', bg:'linear-gradient(135deg,#ca8a04,#facc15)', fg:'#000' },
+  'Fiwind':        { abbr:'FW', bg:'linear-gradient(135deg,#059669,#34d399)', fg:'#fff' },
+  'Brubank':       { abbr:'BK', bg:'linear-gradient(135deg,#6d28d9,#a78bfa)', fg:'#fff' },
+  'Buenbit':       { abbr:'BB', bg:'linear-gradient(135deg,#15803d,#4ade80)', fg:'#fff' },
+  'Ripio':         { abbr:'RP', bg:'linear-gradient(135deg,#1d4ed8,#3b82f6)', fg:'#fff' },
+  'Belo':          { abbr:'BE', bg:'linear-gradient(135deg,#18181b,#52525b)', fg:'#fff' },
+};
+
+const INST = {
+  cuenta: { bg:'#dcfce7', tx:'#16a34a', bd:'#bbf7d0', key:'instCuenta' },
+  fci:    { bg:'#dbeafe', tx:'#1d4ed8', bd:'#bfdbfe', key:'instFCI'    },
+  plazo:  { bg:'#ede9fe', tx:'#7c3aed', bd:'#ddd6fe', key:'instPlazo'  },
+  crypto: { bg:'#fef3c7', tx:'#b45309', bd:'#fde68a', key:'instCrypto' },
+  on:     { bg:'#fee2e2', tx:'#b91c1c', bd:'#fecaca', key:'instON'     },
+};
+
+const ARS_FILTERS = [
+  { key:'all',    label:'Todos' },
+  { key:'cuenta', label:'Cta. Remunerada' },
+  { key:'fci',    label:'FCI / Money Market' },
+  { key:'plazo',  label:'Plazo Fijo' },
+];
+
+const USD_FILTERS = [
+  { key:'all',    label:'Todos' },
+  { key:'plazo',  label:'Plazo Fijo USD' },
+  { key:'crypto', label:'Crypto / Staking' },
+  { key:'on',     label:'ON Corporativas' },
+  { key:'fci',    label:'Fondo USD' },
+];
+
+const NEWS = [
+  'BCRA mantiene tasa de política monetaria en reunión de mayo',
+  'Dólar MEP sube 0.8% en jornada volátil de mercados',
+  'Fintechs lideran rendimientos en pesos durante el trimestre',
+  'Plazo fijo UVA supera inflación por cuarto mes consecutivo',
+];
+
+/* ─── SMALL COMPONENTS ─── */
+
+function AppLogo({ app, size = 36 }) {
+  const m = APP_META[app] || { abbr: app.slice(0,2).toUpperCase(), bg:'#e2e8f0', fg:'#475569' };
+  return (
+    <div style={{
+      width:size, height:size, borderRadius:9, flexShrink:0,
+      background:m.bg, display:'flex', alignItems:'center', justifyContent:'center',
+      fontSize:size * .33, fontWeight:900, color:m.fg, letterSpacing:'-.5px',
+      boxShadow:'0 1px 4px rgba(0,0,0,.18)',
+    }}>{m.abbr}</div>
+  );
+}
+
+function InstTag({ type, t }) {
+  const s = INST[type] || INST.cuenta;
+  return (
+    <span style={{
+      fontSize:11, fontWeight:700, padding:'2px 8px', borderRadius:4,
+      background:s.bg, color:s.tx, border:`1px solid ${s.bd}`,
+      whiteSpace:'nowrap', letterSpacing:'.02em',
+    }}>{t[s.key]}</span>
+  );
+}
+
+function ChangeIndicator({ change }) {
+  if (!change) return <span style={{ color:'#94a3b8', fontSize:13 }}>—</span>;
+  const up = change > 0;
+  return (
+    <span style={{ fontSize:13, fontWeight:700, color: up ? '#16a34a' : '#dc2626', display:'flex', alignItems:'center', gap:2 }}>
+      {up ? '▲' : '▼'} {Math.abs(change).toFixed(1)} pp
+    </span>
+  );
+}
+
+/* ─── TICKER CARD ─── */
+function TickerCard({ label, mainLine, subLine, changeVal }) {
+  const up = changeVal > 0;
+  return (
+    <div className="ticker-card" style={{
+      background:'#fff', border:'1px solid #e2e8f0', borderRadius:10,
+      padding:'12px 14px', flex:'1 1 140px', minWidth:0,
+    }}>
+      <div style={{ fontWeight:600, fontSize:12, color:'#64748b', marginBottom:4 }}>{label}</div>
+      <div style={{ fontWeight:800, fontSize:16, color:'#0f172a', lineHeight:1.2, marginBottom:4 }}>
+        {mainLine || <span style={{ color:'#cbd5e1' }}>—</span>}
+      </div>
+      {subLine && <div style={{ fontSize:11, color:'#94a3b8' }}>{subLine}</div>}
+      <div style={{ fontSize:11, marginTop:3, color:'#94a3b8', display:'flex', alignItems:'center', gap:3 }}>
+        <span>{changeVal == null ? '→' : up ? '↗' : '↘'}</span>
+        <span style={{ color: changeVal ? (up ? '#16a34a' : '#dc2626') : '#94a3b8' }}>
+          {changeVal == null ? 'sin datos' : `${Math.abs(changeVal).toFixed(1)}%`}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* ─── SIMULATOR MODAL ─── */
+function SimulatorModal({ item, currency, onClose, t }) {
+  const [amount, setAmount] = useState('');
+  const [days, setDays]     = useState(30);
+  const sym  = currency === 'ARS' ? '$' : 'U$S';
+  const num  = parseFloat(amount) || 0;
+  const gain = num > 0 ? +(num * item.tna / 100 / 365 * days).toFixed(2) : null;
+  const marks = [1, 30, 90, 180, 365];
+
+  return (
+    <div className="modal-bg fade-in" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={{
+        background:'#fff', borderRadius:16, padding:24, width:'100%', maxWidth:420,
+        border:'1px solid #e2e8f0', boxShadow:'0 20px 60px rgba(0,0,0,.15)',
+      }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:20 }}>
+          <div>
+            <div style={{ color:'#64748b', fontSize:12, marginBottom:2 }}>{t.simTitle}</div>
+            <div style={{ color:'#0f172a', fontSize:19, fontWeight:800 }}>{item.app}</div>
+          </div>
+          <button onClick={onClose} style={{
+            background:'#f1f5f9', border:'1px solid #e2e8f0', borderRadius:8,
+            width:32, height:32, cursor:'pointer', color:'#64748b',
+            fontSize:20, lineHeight:'30px', textAlign:'center', fontFamily:'inherit',
+          }}>×</button>
+        </div>
+
+        <div style={{
+          display:'flex', justifyContent:'space-between', alignItems:'center',
+          background:'#f8fafc', border:'1px solid #e2e8f0', borderRadius:10,
+          padding:'12px 16px', marginBottom:18,
+        }}>
+          <div>
+            <div style={{ color:'#94a3b8', fontSize:10, fontWeight:700, letterSpacing:'.06em', marginBottom:2 }}>{t.colTNA}</div>
+            <div style={{ color:'#16a34a', fontWeight:900, fontSize:28, lineHeight:1 }}>{item.tna}%</div>
+          </div>
+          <div style={{ textAlign:'right' }}>
+            <div style={{ color:'#94a3b8', fontSize:10, fontWeight:700, letterSpacing:'.06em', marginBottom:2 }}>{t.colLimite.toUpperCase()}</div>
+            <div style={{ color:'#1e293b', fontSize:13, fontWeight:700 }}>{item.limit}</div>
+          </div>
+        </div>
+
+        <div style={{ marginBottom:14 }}>
+          <label style={{ display:'block', color:'#64748b', fontSize:12, fontWeight:600, marginBottom:6 }}>
+            {t.simAmount} ({sym})
+          </label>
+          <div style={{ position:'relative' }}>
+            <span style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', color:'#94a3b8', fontSize:14, fontWeight:700 }}>{sym}</span>
+            <input
+              type="number" value={amount} onChange={e => setAmount(e.target.value)}
+              placeholder="100.000"
+              style={{
+                width:'100%', paddingLeft:44, paddingRight:12, paddingTop:10, paddingBottom:10,
+                background:'#f8fafc', border:'1px solid #e2e8f0', borderRadius:8,
+                color:'#0f172a', fontSize:16, fontWeight:700, outline:'none', fontFamily:'inherit',
+              }}
+            />
+          </div>
+        </div>
+
+        <div style={{ marginBottom:20 }}>
+          <label style={{ display:'flex', justifyContent:'space-between', color:'#64748b', fontSize:12, fontWeight:600, marginBottom:6 }}>
+            <span>{t.simDays}</span>
+            <span style={{ color:'#16a34a', fontWeight:800 }}>{days} días</span>
+          </label>
+          <input type="range" min="1" max="365" value={days} onChange={e => setDays(+e.target.value)} style={{ width:'100%' }} />
+          <div style={{ display:'flex', justifyContent:'space-between', fontSize:10, color:'#94a3b8', marginTop:3 }}>
+            {marks.map(d => <span key={d}>{d}d</span>)}
+          </div>
+        </div>
+
+        {gain !== null && (
+          <div style={{
+            background:'#f0fdf4', border:'1px solid #bbf7d0', borderRadius:10,
+            padding:'14px 16px', marginBottom:18,
+          }}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:8 }}>
+              <span style={{ color:'#64748b', fontSize:13 }}>{t.simGain}</span>
+              <span style={{ color:'#16a34a', fontWeight:900, fontSize:17 }}>
+                +{sym} {gain.toLocaleString('es-AR', { minimumFractionDigits:2, maximumFractionDigits:2 })}
+              </span>
+            </div>
+            <div style={{ display:'flex', justifyContent:'space-between' }}>
+              <span style={{ color:'#64748b', fontSize:13 }}>{t.simTotal}</span>
+              <span style={{ color:'#0f172a', fontWeight:800, fontSize:16 }}>
+                {sym} {(num + gain).toLocaleString('es-AR', { minimumFractionDigits:2, maximumFractionDigits:2 })}
+              </span>
+            </div>
+            <div style={{ marginTop:10, paddingTop:10, borderTop:'1px solid #dcfce7', fontSize:10, color:'#94a3b8', lineHeight:1.5 }}>
+              {t.simNote}
+            </div>
+          </div>
+        )}
+
+        <div style={{ display:'flex', gap:10 }}>
+          <button onClick={onClose} style={{
+            flex:1, padding:'10px 0', borderRadius:8, cursor:'pointer', fontFamily:'inherit',
+            background:'#f1f5f9', border:'1px solid #e2e8f0', color:'#64748b', fontWeight:600, fontSize:14,
+          }}>{t.simClose}</button>
+          <button style={{
+            flex:2, padding:'10px 0', borderRadius:8, cursor:'pointer', fontFamily:'inherit',
+            background:'#16a34a', border:'none', color:'#fff', fontWeight:800, fontSize:14,
+          }}>{t.simGo}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── LOADING ─── */
+function LoadingScreen({ msg }) {
+  return (
+    <div style={{
+      position:'fixed', inset:0, background:'#f1f5f9',
+      display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:16,
+    }}>
+      <div style={{
+        width:56, height:56, borderRadius:14, background:'#16a34a',
+        display:'flex', alignItems:'center', justifyContent:'center', fontSize:28,
+        boxShadow:'0 0 30px rgba(22,163,74,.3)',
+      }}>📈</div>
+      <div style={{ color:'#16a34a', fontWeight:800, fontSize:18 }}>FinRank AR</div>
+      <div style={{ color:'#64748b', fontSize:13 }}>{msg}</div>
+      <div style={{ display:'flex', gap:6 }}>
+        {[0,1,2].map(i => (
+          <div key={i} style={{
+            width:6, height:6, borderRadius:'50%', background:'#16a34a',
+            animation:`pulse-dot 1.2s ease-in-out ${i*.2}s infinite`,
+          }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── TABLE ROW ─── */
+function RankRow({ item, rank, currency, onSimulate, t, delay }) {
+  const rnkColors = {
+    1: { bg:'#fef3c7', tx:'#b45309', bd:'#fde68a' },
+    2: { bg:'#f1f5f9', tx:'#475569', bd:'#e2e8f0' },
+    3: { bg:'#fdf2e9', tx:'#92400e', bd:'#f6d5a9' },
+  };
+  const r = rnkColors[rank] || { bg:'#f8fafc', tx:'#94a3b8', bd:'#e2e8f0' };
+
+  return (
+    <tr className="rank-row slide-up" style={{ background:'#fff', borderBottom:'1px solid #f1f5f9', animationDelay:delay }}>
+      {/* Entidad */}
+      <td style={{ padding:'13px 16px', verticalAlign:'middle' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+          <div style={{
+            width:28, height:28, borderRadius:7, flexShrink:0,
+            background:r.bg, border:`1px solid ${r.bd}`,
+            display:'flex', alignItems:'center', justifyContent:'center',
+            fontWeight:900, fontSize:13, color:r.tx,
+          }}>{rank}</div>
+          <AppLogo app={item.app} size={36} />
+          <div>
+            <div style={{ display:'flex', alignItems:'center', gap:5, flexWrap:'wrap' }}>
+              <span style={{ fontWeight:700, fontSize:14, color:'#0f172a' }}>{item.app}</span>
+              {item.promo && (
+                <span style={{
+                  fontSize:9, padding:'2px 5px', borderRadius:3, fontWeight:800,
+                  background:'#fef3c7', border:'1px solid #fde68a', color:'#b45309', letterSpacing:'.05em',
+                }}>{t.promo}</span>
+              )}
+            </div>
+            {item.promo && (
+              <div style={{ fontSize:11, color:'#94a3b8', marginTop:1 }}>[{t.promo}: {t.promoDays}]</div>
+            )}
+          </div>
+        </div>
+      </td>
+
+      {/* Producto */}
+      <td style={{ padding:'13px 12px', verticalAlign:'middle' }}>
+        <InstTag type={item.type} t={t} />
+      </td>
+
+      {/* TNA */}
+      <td style={{ padding:'13px 12px', verticalAlign:'middle', textAlign:'right' }}>
+        <span style={{ fontWeight:900, fontSize:20, color:'#0f172a' }}>{item.tna.toFixed(1)}%</span>
+      </td>
+
+      {/* Límite */}
+      <td style={{ padding:'13px 12px', verticalAlign:'middle', color:'#475569', fontSize:13, fontWeight:500 }}>
+        {item.limit}
+      </td>
+
+      {/* Variación */}
+      <td style={{ padding:'13px 12px', verticalAlign:'middle' }}>
+        <ChangeIndicator change={item.change} />
+      </td>
+
+      {/* Acción */}
+      <td style={{ padding:'13px 16px', verticalAlign:'middle' }}>
+        <button
+          onClick={() => onSimulate(item)}
+          style={{
+            padding:'6px 12px', borderRadius:6, cursor:'pointer', fontFamily:'inherit',
+            background:'#f8fafc', border:'1px solid #e2e8f0',
+            color:'#475569', fontWeight:600, fontSize:12, whiteSpace:'nowrap',
+          }}
+          onMouseEnter={e => e.currentTarget.style.background='#e2e8f0'}
+          onMouseLeave={e => e.currentTarget.style.background='#f8fafc'}
+        >📊 {t.simBtn}</button>
+      </td>
+    </tr>
+  );
+}
+
+/* ─── SIDEBAR ─── */
+function Sidebar({ t }) {
+  return (
+    <div style={{ width:270, flexShrink:0 }}>
+      {/* News */}
+      <div style={{ background:'#fff', border:'1px solid #e2e8f0', borderRadius:10, padding:16, marginBottom:16 }}>
+        <div style={{ fontWeight:700, fontSize:14, color:'#0f172a', marginBottom:12, paddingBottom:10, borderBottom:'1px solid #f1f5f9' }}>
+          {t.newsTitle}
+        </div>
+        {NEWS.map((news, i) => (
+          <a key={i} href="#" style={{
+            display:'block', fontSize:13, color:'#1d4ed8', textDecoration:'none',
+            padding:'7px 0', borderBottom: i < NEWS.length-1 ? '1px solid #f1f5f9' : 'none',
+            lineHeight:1.4,
+          }}
+            onMouseEnter={e => e.currentTarget.style.color='#1e40af'}
+            onMouseLeave={e => e.currentTarget.style.color='#1d4ed8'}
+          >{news}</a>
+        ))}
+      </div>
+
+      {/* Ad 1 */}
+      <div style={{ background:'#f8fafc', border:'1px dashed #e2e8f0', borderRadius:10, padding:16, marginBottom:16, textAlign:'center' }}>
+        <div style={{ fontSize:9, color:'#94a3b8', marginBottom:8, letterSpacing:'.06em', textTransform:'uppercase' }}>{t.adLabel}</div>
+        <div style={{
+          width:'100%', height:250, background:'#f1f5f9', borderRadius:6,
+          display:'flex', alignItems:'center', justifyContent:'center',
+          color:'#cbd5e1', fontSize:12, fontWeight:600,
+        }}>300×250</div>
+      </div>
+
+      {/* Ad 2 */}
+      <div style={{ background:'#f8fafc', border:'1px dashed #e2e8f0', borderRadius:10, padding:16, textAlign:'center' }}>
+        <div style={{ fontSize:9, color:'#94a3b8', marginBottom:8, letterSpacing:'.06em', textTransform:'uppercase' }}>{t.adLabel}</div>
+        <div style={{
+          width:'100%', height:250, background:'#f1f5f9', borderRadius:6,
+          display:'flex', alignItems:'center', justifyContent:'center',
+          color:'#cbd5e1', fontSize:12, fontWeight:600,
+        }}>300×250</div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── MAIN APP ─── */
+function App() {
+  const [lang,        setLang]        = useState('es');
+  const [activeTab,   setActiveTab]   = useState('ars');
+  const [filter,      setFilter]      = useState('all');
+  const [syncing,     setSyncing]     = useState(false);
+  const [initLoading, setInitLoading] = useState(true);
+  const [loadMsg,     setLoadMsg]     = useState('Conectando con BCRA…');
+  const [lastUpdate,  setLastUpdate]  = useState('—');
+  const [animKey,     setAnimKey]     = useState(0);
+  const [simItem,     setSimItem]     = useState(null);
+  const [arsData,     setArsData]     = useState({ items:[], badlar:null, sourceLabel:'' });
+  const [usdData,     setUsdData]     = useState({ items:[], sourceLabel:'' });
+  const [dolares,     setDolares]     = useState({ blue:null, mep:null, ccl:null });
+  const [fetchError,  setFetchError]  = useState(null);
+
+  const t = T[lang];
+
+  const nowStr = () => {
+    const n = new Date();
+    return `${n.toLocaleDateString('es-AR')} ${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')} hs`;
+  };
+
+  const fetchAll = useCallback(async (isInit = false) => {
+    if (isInit) { setInitLoading(true); setLoadMsg('Conectando con BCRA…'); }
+    else setSyncing(true);
+    setFetchError(null);
+    const [ars, usd, dol] = await Promise.allSettled([loadARS(), loadUSD(), fetchDolares()]);
+    if (ars.status === 'fulfilled')  setArsData(ars.value);
+    else setFetchError(ars.reason?.message || 'Error BCRA');
+    if (usd.status === 'fulfilled')  setUsdData(usd.value);
+    if (dol.status === 'fulfilled')  setDolares(dol.value);
+    setLastUpdate(nowStr());
+    setInitLoading(false);
+    setSyncing(false);
+  }, []);
+
+  useEffect(() => { fetchAll(true); }, []);
+
+  const currency  = activeTab === 'usd' ? 'USD' : 'ARS';
+  const rawData   = currency === 'ARS' ? arsData.items : usdData.items;
+  const filters   = currency === 'ARS' ? ARS_FILTERS : USD_FILTERS;
+  const filtered  = filter === 'all' ? rawData : rawData.filter(d => d.type === filter);
+  const srcLabel  = currency === 'ARS' ? arsData.sourceLabel : usdData.sourceLabel;
+  const avgTNA    = arsData.items.length ? (arsData.items.reduce((a,b) => a+b.tna, 0) / arsData.items.length) : 0;
+  const avgFiltered = filtered.length ? (filtered.reduce((a,b) => a+b.tna, 0) / filtered.length) : 0;
+  const showTable = activeTab === 'ars' || activeTab === 'usd';
+
+  const handleTab = (key) => { setActiveTab(key); setFilter('all'); setAnimKey(k => k+1); };
+
+  const fmtP = n => n != null ? `$${Math.round(n).toLocaleString('es-AR')}` : '—';
+  const bl = dolares.blue, mep = dolares.mep, ccl = dolares.ccl;
+
+  if (initLoading) return <LoadingScreen msg={loadMsg} />;
+
+  const TABS = [
+    { key:'home',     label:t.tabHome     },
+    { key:'ars',      label:t.tabARS      },
+    { key:'usd',      label:t.tabUSD      },
+    { key:'carteras', label:t.tabCarteras },
+    { key:'calc',     label:t.tabCalc     },
+  ];
+
+  return (
+    <div style={{ minHeight:'100vh', background:'#f1f5f9' }}>
+
+      {/* ── HEADER ── */}
+      <header style={{
+        background:'#fff', borderBottom:'1px solid #e2e8f0',
+        boxShadow:'0 1px 3px rgba(0,0,0,.05)', position:'sticky', top:0, zIndex:40,
+      }}>
+        <div style={{ maxWidth:1200, margin:'0 auto', padding:'0 20px' }}>
+
+          {/* Lang bar */}
+          <div style={{ display:'flex', justifyContent:'flex-end', padding:'5px 0', borderBottom:'1px solid #f1f5f9', gap:4 }}>
+            {['es','en'].map(l => (
+              <button key={l} onClick={() => setLang(l)} style={{
+                background:'none', border:'none', cursor:'pointer', fontFamily:'inherit',
+                fontWeight: lang===l ? 700 : 400, color: lang===l ? '#0f172a' : '#94a3b8',
+                fontSize:12, padding:'1px 6px',
+              }}>{l === 'es' ? 'Spanish' : 'English'}</button>
+            ))}
+          </div>
+
+          {/* Logo + buttons */}
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 0' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+              <div style={{
+                width:44, height:44, borderRadius:10, background:'#16a34a',
+                display:'flex', alignItems:'center', justifyContent:'center', fontSize:22,
+                boxShadow:'0 2px 8px rgba(22,163,74,.3)',
+              }}>📈</div>
+              <div>
+                <div style={{ fontWeight:900, fontSize:22, color:'#0f172a', lineHeight:1 }}>FinRank AR</div>
+                <div style={{ color:'#64748b', fontSize:12, marginTop:2 }}>{t.appSub}</div>
+              </div>
+            </div>
+            <div style={{ display:'flex', gap:8 }}>
+              <button style={{
+                display:'flex', alignItems:'center', gap:6, padding:'7px 14px', borderRadius:8,
+                cursor:'pointer', fontFamily:'inherit', background:'#fff',
+                border:'1px solid #e2e8f0', color:'#475569', fontWeight:600, fontSize:13,
+              }}>
+                <span className="live-dot" style={{ width:7, height:7, borderRadius:'50%', background:'#16a34a', display:'inline-block' }}></span>
+                {t.btnUser}
+              </button>
+              <button style={{
+                display:'flex', alignItems:'center', gap:6, padding:'7px 14px', borderRadius:8,
+                cursor:'pointer', fontFamily:'inherit', background:'#f1f5f9',
+                border:'1px solid #e2e8f0', color:'#475569', fontWeight:600, fontSize:13,
+              }}>⚙ {t.btnAdmin}</button>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <nav style={{ display:'flex', marginBottom:'-1px' }}>
+            {TABS.map(tab => {
+              const active = activeTab === tab.key;
+              return (
+                <button key={tab.key} onClick={() => handleTab(tab.key)} style={{
+                  padding:'11px 18px', background:'none', border:'none', cursor:'pointer',
+                  fontFamily:'inherit', fontWeight: active ? 700 : 500, fontSize:14,
+                  color: active ? '#16a34a' : '#64748b',
+                  borderBottom: active ? '2px solid #16a34a' : '2px solid transparent',
+                  transition:'color .15s, border-color .15s', whiteSpace:'nowrap',
+                }}>{tab.label}</button>
+              );
+            })}
+          </nav>
+        </div>
+      </header>
+
+      {/* ── TICKER ROW ── */}
+      <div style={{ background:'#fff', borderBottom:'1px solid #e2e8f0', padding:'12px 0' }}>
+        <div style={{ maxWidth:1200, margin:'0 auto', padding:'0 20px' }}>
+          <div style={{ display:'flex', gap:10, alignItems:'stretch' }}>
+            {/* 2x2 grid */}
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, flex:1 }}>
+              <TickerCard
+                label={t.dolBlue}
+                mainValue={bl ? `${t.compra}: ${fmtP(bl.compra)}, ${t.venta}: ${fmtP(bl.venta)}` : null}
+                changeVal={null}
+              />
+              <TickerCard
+                label={t.dolMEP}
+                mainValue={mep ? fmtP(mep.venta) : null}
+                changeVal={null}
+              />
+              <TickerCard
+                label={t.dolCCL}
+                mainValue={ccl ? fmtP(ccl.venta) : null}
+                changeVal={null}
+              />
+              <TickerCard
+                label={t.tnaProm}
+                mainValue={arsData.items.length ? `${avgTNA.toFixed(1)}%` : null}
+                changeVal={null}
+              />
+            </div>
+
+            {/* Leaderboard ad */}
+            <div style={{
+              background:'#f8fafc', border:'1px dashed #e2e8f0', borderRadius:10,
+              padding:'10px 14px', flexShrink:0,
+              display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+              minWidth:200,
+            }}>
+              <div style={{ fontSize:9, color:'#94a3b8', letterSpacing:'.06em', textTransform:'uppercase', marginBottom:8 }}>Publicidad</div>
+              <div style={{
+                width:'100%', height:60, background:'#e2e8f0', borderRadius:6,
+                display:'flex', alignItems:'center', justifyContent:'center',
+                color:'#94a3b8', fontSize:11, fontWeight:600,
+              }}>Leaderboard 728×90</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── BODY ── */}
+      <div style={{ maxWidth:1200, margin:'20px auto 0', padding:'0 20px 60px' }}>
+        <div style={{ display:'flex', gap:20, alignItems:'flex-start' }}>
+
+          {/* MAIN */}
+          <div style={{ flex:1, minWidth:0 }}>
+
+            {/* HOME tab */}
+            {activeTab === 'home' && (
+              <div style={{ background:'#fff', border:'1px solid #e2e8f0', borderRadius:10, padding:'40px 24px', textAlign:'center' }}>
+                <div style={{ fontSize:48, marginBottom:14 }}>📈</div>
+                <div style={{ fontWeight:800, fontSize:22, color:'#0f172a', marginBottom:10 }}>FinRank AR</div>
+                <div style={{ color:'#64748b', fontSize:14, maxWidth:420, margin:'0 auto', lineHeight:1.6 }}>
+                  Comparador de rendimientos financieros en Argentina.<br/>
+                  Seleccioná <strong>Pesos (ARS)</strong> o <strong>Dólares (USD)</strong> para ver el ranking.
+                </div>
+              </div>
+            )}
+
+            {/* ARS / USD TABLE */}
+            {showTable && (
+              <>
+                {/* Data banner */}
+                <div style={{
+                  background:'#f8fafc', border:'1px solid #e2e8f0', borderRadius:10,
+                  padding:'11px 16px', marginBottom:12, fontSize:13, color:'#475569', lineHeight:1.6,
+                  display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:8,
+                }}>
+                  <div>
+                    <div className="live-dot" style={{
+                      width:7, height:7, borderRadius:'50%', background:'#16a34a',
+                      display:'inline-block', marginRight:7, verticalAlign:'middle',
+                    }}></div>
+                    <strong style={{ color:'#0f172a' }}>{t.dataRealtime}</strong>
+                    {' '}({t.lastUpdate}: {lastUpdate}).
+                    <br/>
+                    <span style={{ color:'#94a3b8', fontSize:11 }}>{t.source}: {srcLabel}.</span>
+                    {fetchError && <span style={{ color:'#dc2626', fontSize:11, marginLeft:8 }}>⚠️ {fetchError}</span>}
+                  </div>
+                  <button
+                    onClick={() => fetchAll(false)}
+                    disabled={syncing}
+                    style={{
+                      padding:'6px 14px', borderRadius:7, cursor: syncing ? 'not-allowed' : 'pointer',
+                      background: syncing ? '#f1f5f9' : '#16a34a', border:'none',
+                      color: syncing ? '#94a3b8' : '#fff', fontWeight:700, fontSize:12, fontFamily:'inherit',
+                      display:'flex', alignItems:'center', gap:6,
+                    }}
+                  >
+                    <span className={syncing ? 'spin' : ''}>{syncing ? '⟳' : '↻'}</span>
+                    {syncing ? t.syncing : t.syncBtn}
+                  </button>
+                </div>
+
+                {/* Filter chips */}
+                <div style={{ display:'flex', gap:6, marginBottom:12, flexWrap:'wrap' }}>
+                  {filters.map(f => (
+                    <button key={f.key} onClick={() => setFilter(f.key)} className="filter-chip" style={{
+                      padding:'5px 14px', borderRadius:20, cursor:'pointer', fontFamily:'inherit',
+                      fontSize:12, fontWeight:600, whiteSpace:'nowrap',
+                      background: filter===f.key ? '#16a34a' : '#fff',
+                      border:`1px solid ${filter===f.key ? '#16a34a' : '#e2e8f0'}`,
+                      color: filter===f.key ? '#fff' : '#64748b',
+                    }}>{f.label}</button>
+                  ))}
+                </div>
+
+                {/* Table */}
+                <div style={{ background:'#fff', border:'1px solid #e2e8f0', borderRadius:10, overflow:'hidden' }}>
+                  {filtered.length === 0 ? (
+                    <div style={{ textAlign:'center', color:'#94a3b8', padding:48, fontSize:14 }}>{t.noResults}</div>
+                  ) : (
+                    <div style={{ overflowX:'auto' }}>
+                      <table style={{ width:'100%', borderCollapse:'collapse' }}>
+                        <thead>
+                          <tr style={{ borderBottom:'2px solid #f1f5f9', background:'#fafafa' }}>
+                            {[t.colEntidad, t.colProducto, t.colTNA, t.colLimite, t.colVar, ''].map((col, i) => (
+                              <th key={i} style={{
+                                padding:'10px 16px', textAlign: i===2 ? 'right' : 'left',
+                                fontSize:11, fontWeight:700, color:'#94a3b8',
+                                letterSpacing:'.07em', textTransform:'uppercase',
+                                ...(i===5 ? { width:90 } : {}),
+                              }}>{col}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody key={animKey}>
+                          {filtered.map((item, idx) => (
+                            <RankRow
+                              key={item.id}
+                              item={item}
+                              rank={idx+1}
+                              currency={currency}
+                              onSimulate={setSimItem}
+                              t={t}
+                              delay={`${idx*.05}s`}
+                            />
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+
+              </>
+            )}
+
+            {/* COMING SOON tabs */}
+            {(activeTab === 'carteras' || activeTab === 'calc') && (
+              <div style={{ background:'#fff', border:'1px solid #e2e8f0', borderRadius:10, padding:'48px 24px', textAlign:'center' }}>
+                <div style={{ fontSize:32, marginBottom:12 }}>🚧</div>
+                <div style={{ fontWeight:700, fontSize:16, color:'#0f172a', marginBottom:6 }}>{t.comingSoon}</div>
+                <div style={{ color:'#94a3b8', fontSize:13 }}>Esta sección estará disponible próximamente.</div>
+              </div>
+            )}
+
+            {/* Disclaimer */}
+            <div style={{ marginTop:18, padding:'11px 16px', background:'#fafafa', border:'1px solid #f1f5f9', borderRadius:8 }}>
+              <p style={{ color:'#94a3b8', fontSize:11, lineHeight:1.65, margin:0 }}>⚠️ {t.disclaimer}</p>
+            </div>
+          </div>
+
+          {/* SIDEBAR */}
+          <Sidebar t={t} />
+        </div>
+      </div>
+
+      {simItem && <SimulatorModal item={simItem} currency={currency} onClose={() => setSimItem(null)} t={t} />}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

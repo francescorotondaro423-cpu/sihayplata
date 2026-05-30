@@ -1,0 +1,202 @@
+{
+  "version": "2026-05",
+  "lastUpdated": "2026-05-29",
+  "items": [
+    {
+      "id": 1, "entidad": "Cuenta DNI", "subtitulo": "Banco Provincia",
+      "abbr": "CD", "bg": "linear-gradient(135deg,#166534,#16a34a)", "fg": "#fff",
+      "grupo": "publico", "rubros": ["colectivo", "subte", "tren"],
+      "tipo_beneficio": "reintegro", "beneficio_label": "100%",
+      "porcentaje_min": 100, "porcentaje_max": 100,
+      "tope_mensual": 10000, "tope_label": "$10.000 / mes",
+      "metodos_pago": ["nfc", "recarga_digital"], "dias_semana": null,
+      "segmento": "Usuarios sub-25 o campañas activas",
+      "condicion": "Reintegro en Pago Directo NFC en molinete o recarga digital desde la app",
+      "pasos": [
+        "Descargá la app Cuenta DNI del Banco Provincia desde el App Store o Google Play.",
+        "Creá o ingresá a tu cuenta y completá la verificación de identidad.",
+        "Activá el beneficio de transporte en la sección 'Beneficios' de la app.",
+        "En el molinete o torno, activá NFC en tu celular y acercalo al lector, o recargá SUBE desde la app.",
+        "El reintegro se acredita en tu Cuenta DNI dentro de las 72 hs hábiles del pago."
+      ],
+      "requisitos": [
+        "Ser menor de 25 años o estar dentro de una campaña activa de Banco Provincia.",
+        "App instalada con cuenta verificada.",
+        "Teléfono con NFC habilitado para Pago Directo, o internet para recarga SUBE.",
+        "Tope mensual: $10.000 entre todos los rubros de transporte."
+      ],
+      "activo": true, "promo": false,
+      "fecha_inicio": "2026-05-01", "fecha_expiracion": "2026-06-30",
+      "verificado": true, "reportes_error": 0,
+      "fuente": "Términos y condiciones Cuenta DNI / Banco Provincia · mayo 2026"
+    },
+    {
+      "id": 2, "entidad": "Naranja X", "subtitulo": "Visa / Mastercard Contactless",
+      "abbr": "NX", "bg": "linear-gradient(135deg,#ea580c,#fb923c)", "fg": "#fff",
+      "grupo": "publico", "rubros": ["subte", "colectivo"],
+      "tipo_beneficio": "reintegro", "beneficio_label": "100%",
+      "porcentaje_min": 100, "porcentaje_max": 100,
+      "tope_mensual": 10000, "tope_label": "$5.000 Subte + $5.000 Colectivo",
+      "metodos_pago": ["nfc", "tarjeta_contactless"], "dias_semana": null,
+      "segmento": null,
+      "condicion": "Pago Directo en molinetes habilitados vía NFC o tarjeta Visa/Mastercard contactless",
+      "pasos": [
+        "Descargá la app Naranja X e ingresá con tu usuario.",
+        "Activá NFC en tu celular desde Ajustes > Conectividad.",
+        "En el molinete habilitado, acercá el teléfono al lector NFC o usá la tarjeta física con chip contactless.",
+        "La app registra el pago automáticamente y aplica el reintegro.",
+        "El reintegro aparece en el resumen de tu cuenta dentro de los 30 días corridos."
+      ],
+      "requisitos": [
+        "Tarjeta Visa o Mastercard Naranja X activa (prepaga, débito o crédito).",
+        "El molinete debe estar habilitado para pagos NFC o contactless.",
+        "Topes independientes: $5.000/mes para Subte y $5.000/mes para Colectivo.",
+        "El reintegro es por el total del viaje, no aplica en recargas de SUBE."
+      ],
+      "activo": true, "promo": true,
+      "fecha_inicio": "2026-05-01", "fecha_expiracion": "2026-06-30",
+      "verificado": true, "reportes_error": 0,
+      "fuente": "Promo Naranja X · transporte · mayo/junio 2026"
+    },
+    {
+      "id": 3, "entidad": "Ualá", "subtitulo": "Mastercard prepaga",
+      "abbr": "UA", "bg": "linear-gradient(135deg,#ff6b35,#f97316)", "fg": "#fff",
+      "grupo": "publico", "rubros": ["colectivo", "subte", "tren"],
+      "tipo_beneficio": "cashback", "beneficio_label": "100%",
+      "porcentaje_min": 100, "porcentaje_max": 100,
+      "tope_mensual": null, "tope_label": "Sujeto a campaña mensual activa",
+      "metodos_pago": ["google_pay", "apple_pay", "tarjeta_contactless"], "dias_semana": null,
+      "segmento": null,
+      "condicion": "Tarjeta prepaga asociada a Google Pay o Apple Pay en molinetes NFC habilitados",
+      "pasos": [
+        "Descargá la app Ualá y activá tu tarjeta prepaga Mastercard.",
+        "Agregá la tarjeta Ualá a Google Pay (Android) o Apple Pay (iPhone) desde 'Mis tarjetas'.",
+        "En el molinete habilitado, desbloqueá el teléfono y acercalo al lector NFC — no hace falta abrir ninguna app.",
+        "El cashback se acredita automáticamente en tu billetera Ualá según los términos de la campaña.",
+        "Verificá el cashback en el historial de movimientos de la app."
+      ],
+      "requisitos": [
+        "Tarjeta prepaga Mastercard de Ualá activa con saldo suficiente.",
+        "Celular compatible con Google Pay (Android 6+) o Apple Pay (iPhone 6s+).",
+        "El beneficio está sujeto a la campaña mensual — el tope puede variar.",
+        "Verificar en la app que la campaña de transporte esté vigente antes de usar."
+      ],
+      "activo": true, "promo": true,
+      "fecha_inicio": "2026-05-01", "fecha_expiracion": "2026-05-31",
+      "verificado": true, "reportes_error": 0,
+      "fuente": "Programa de beneficios Ualá · campaña transporte mayo 2026"
+    },
+    {
+      "id": 4, "entidad": "Brubank", "subtitulo": "Bruplus / Desafíos",
+      "abbr": "BK", "bg": "linear-gradient(135deg,#6d28d9,#a78bfa)", "fg": "#fff",
+      "grupo": "publico", "rubros": ["colectivo", "subte", "tren"],
+      "tipo_beneficio": "descuento", "beneficio_label": "10% – 100%",
+      "porcentaje_min": 10, "porcentaje_max": 100,
+      "tope_mensual": null, "tope_label": "Variable según desafío activo",
+      "metodos_pago": ["nfc", "tarjeta_contactless"], "dias_semana": null,
+      "segmento": "Suscriptores Bruplus o desafíos completados en la app",
+      "condicion": "Activar suscripción Bruplus o completar desafío de gamificación en la app Brubank",
+      "pasos": [
+        "Descargá la app Brubank y activá tu cuenta.",
+        "Suscribite a Bruplus desde 'Beneficios', o ingresá a 'Desafíos' para ver los disponibles.",
+        "Buscá el desafío activo relacionado con transporte público y aceptalo.",
+        "Cumplí las condiciones del desafío (cantidad de viajes, monto mínimo, etc.).",
+        "Pagá el transporte con tu tarjeta Brubank en molinetes habilitados — el descuento se aplica al completar el desafío."
+      ],
+      "requisitos": [
+        "Suscripción Bruplus activa (tiene costo mensual) o desafío de transporte disponible.",
+        "El porcentaje varía entre 10% y 100% según el desafío específico.",
+        "Los desafíos cambian mensualmente — verificar disponibilidad en la app.",
+        "No todos los desafíos aplican al mismo rubro de transporte."
+      ],
+      "activo": true, "promo": false,
+      "fecha_inicio": "2026-05-01", "fecha_expiracion": "2026-06-30",
+      "verificado": true, "reportes_error": 0,
+      "fuente": "Programa Bruplus / Gamificación Brubank · mayo 2026"
+    },
+    {
+      "id": 5, "entidad": "MODO / BNA+", "subtitulo": "Banco Nación Argentina",
+      "abbr": "BN", "bg": "linear-gradient(135deg,#1e40af,#3b82f6)", "fg": "#fff",
+      "grupo": "publico", "rubros": ["tren", "subte"],
+      "tipo_beneficio": "reintegro", "beneficio_label": "20% – 30%",
+      "porcentaje_min": 20, "porcentaje_max": 30,
+      "tope_mensual": null, "tope_label": "Estaciones seleccionadas",
+      "metodos_pago": ["qr"], "dias_semana": null,
+      "segmento": null,
+      "condicion": "Escanear QR en tótems presenciales de estaciones adheridas al programa BNA+/MODO",
+      "pasos": [
+        "Descargá la app MODO o BNA+ y vinculá tu cuenta del Banco Nación.",
+        "Antes de viajar, identificá las estaciones de tren o subte adheridas al programa.",
+        "En la estación, buscá el tótem con código QR del programa (generalmente en el hall de acceso).",
+        "Abrí la app, ir a 'Escanear QR' y escaneá el código del tótem.",
+        "Completá el pago — el reintegro del 20% o 30% se acredita en tu cuenta BNA dentro de 48-72 hs hábiles."
+      ],
+      "requisitos": [
+        "Cuenta bancaria activa en el Banco Nación Argentina.",
+        "App MODO o BNA+ instalada y vinculada a la cuenta BNA.",
+        "El beneficio aplica solo en estaciones con tótems QR adheridos, no en todas.",
+        "Verificar en la app el listado actualizado de estaciones participantes."
+      ],
+      "activo": true, "promo": false,
+      "fecha_inicio": "2026-05-01", "fecha_expiracion": "2026-06-30",
+      "verificado": true, "reportes_error": 0,
+      "fuente": "Gacetilla MODO / programa BNA+ Banco Nación · mayo 2026"
+    },
+    {
+      "id": 6, "entidad": "Mercado Pago", "subtitulo": "Nivel Más / Meli+",
+      "abbr": "MP", "bg": "linear-gradient(135deg,#009de0,#22d3ee)", "fg": "#fff",
+      "grupo": "publico", "rubros": ["colectivo", "subte", "tren"],
+      "tipo_beneficio": "descuento", "beneficio_label": "Variable",
+      "porcentaje_min": null, "porcentaje_max": null,
+      "tope_mensual": null, "tope_label": "Primera recarga SUBE del mes",
+      "metodos_pago": ["recarga_digital"], "dias_semana": null,
+      "segmento": "Usuarios con Nivel Más o suscripción Meli+",
+      "condicion": "Descuento en la primera recarga de tarjeta SUBE del mes calendario desde la app",
+      "pasos": [
+        "Abrí la app de Mercado Pago.",
+        "Ir a la sección 'SUBE' o buscá 'Recargar SUBE' en el buscador de la app.",
+        "Ingresá el número de tu tarjeta SUBE o escaneá el QR de la tarjeta.",
+        "Elegí el monto a recargar — el descuento se aplica automáticamente en la primera recarga del mes.",
+        "El saldo queda disponible en tu tarjeta SUBE de forma inmediata."
+      ],
+      "requisitos": [
+        "Nivel Más (Mercado Pago) o suscripción Meli+ activa.",
+        "El descuento aplica solo en la primera recarga SUBE del mes calendario.",
+        "El porcentaje exacto varía según el nivel — verificar en la app el beneficio activo.",
+        "Es necesario tener la tarjeta SUBE física para hacer la recarga."
+      ],
+      "activo": true, "promo": false,
+      "fecha_inicio": "2026-05-01", "fecha_expiracion": "2026-06-30",
+      "verificado": false, "reportes_error": 0,
+      "fuente": "Beneficios Mercado Pago Nivel Más / Meli+ · sujeto a verificación"
+    },
+    {
+      "id": 7, "entidad": "TelePASE", "subtitulo": "Pluspagos / Mercado Pago",
+      "abbr": "TP", "bg": "linear-gradient(135deg,#0f766e,#14b8a6)", "fg": "#fff",
+      "grupo": "autopistas", "rubros": ["autopista", "peaje"],
+      "tipo_beneficio": "descuento", "beneficio_label": "10% – 30%",
+      "porcentaje_min": 10, "porcentaje_max": 30,
+      "tope_mensual": null, "tope_label": "Débito automático por trayecto",
+      "metodos_pago": ["telepase", "debito_automatico"], "dias_semana": null,
+      "segmento": null,
+      "condicion": "Vincular patente del vehículo a la billetera digital (Pluspagos o Mercado Pago)",
+      "pasos": [
+        "Descargá Pluspagos o abrí la app de Mercado Pago.",
+        "Ir a la sección 'TelePASE' o 'Autopistas y peajes'.",
+        "Registrá la patente de tu vehículo siguiendo los pasos de verificación.",
+        "Vinculá tu método de pago: tarjeta de crédito, débito o saldo en la billetera.",
+        "Al pasar por el peaje, el cobro se hace automáticamente con el descuento aplicado — no hace falta detenerse."
+      ],
+      "requisitos": [
+        "Vehículo con patente registrada en la app (Pluspagos o Mercado Pago).",
+        "Método de pago vinculado con saldo o crédito suficiente.",
+        "El descuento varía entre 10% y 30% según el peaje y la billetera.",
+        "Aplica en autopistas y peajes adheridos — verificar cobertura en la app."
+      ],
+      "activo": true, "promo": false,
+      "fecha_inicio": "2026-05-01", "fecha_expiracion": "2026-06-30",
+      "verificado": true, "reportes_error": 0,
+      "fuente": "Programa TelePASE / Pluspagos · regulación Autopistas BA · mayo 2026"
+    }
+  ]
+}

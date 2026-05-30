@@ -1,0 +1,14 @@
+{
+  "sourceLabel": "Tasas referenciales — verificar en cada plataforma antes de invertir",
+  "lastManualUpdate": "2026-05-23",
+  "items": [
+    { "app": "Fiwind",        "type": "plazo",  "tna": 7.5, "promo": false, "limit": "Hasta U$S 50.000", "info": "Plazo Fijo USD, mínimo 30 días"      },
+    { "app": "Buenbit",       "type": "crypto", "tna": 6.8, "promo": true,  "limit": "Sin Límite",       "info": "USDT/USDC yield, liquidez semanal"   },
+    { "app": "Lemon Cash",    "type": "crypto", "tna": 5.5, "promo": false, "limit": "Sin Límite",       "info": "USDT Staking pool, retiro en 72hs"   },
+    { "app": "Cocos Capital", "type": "on",     "tna": 5.0, "promo": false, "limit": "Sin Límite",       "info": "ON Corporativas en dólares"          },
+    { "app": "Belo",          "type": "crypto", "tna": 4.5, "promo": false, "limit": "Sin Límite",       "info": "USDT/USDC, acreditación diaria"      },
+    { "app": "Ripio",         "type": "crypto", "tna": 4.0, "promo": false, "limit": "Hasta U$S 10.000", "info": "Ripio Earn, 7 días lock-up"           },
+    { "app": "Naranja X",     "type": "plazo",  "tna": 3.5, "promo": false, "limit": "Hasta U$S 5.000",  "info": "Plazo Fijo USD, mínimo 30 días"      },
+    { "app": "Mercado Pago",  "type": "fci",    "tna": 3.0, "promo": false, "limit": "Sin Límite",       "info": "Fondo USD disponible"                }
+  ]
+}

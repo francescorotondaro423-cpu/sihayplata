@@ -1,0 +1,356 @@
+{
+  "version": "2026-05",
+  "lastUpdated": "2026-05-29",
+  "items": [
+    {
+      "id": 1,
+      "billetera_id": "Cuenta DNI", "billetera_subtitulo": "Banco Provincia",
+      "abbr": "CD", "bg": "linear-gradient(135deg,#166534,#16a34a)", "fg": "#fff",
+      "rubro": "supermercado",
+      "comercios": ["Nini", "Vital"],
+      "comercios_label": "Mayoristas Nini y Vital",
+      "tipo_beneficio": "descuento",
+      "beneficio_label": "15%",
+      "porcentaje_min": 15, "porcentaje_max": 15,
+      "tope_reintegro": null, "tope_label": "Sin tope informado",
+      "dias_semana_validos": [2],
+      "metodo_pago": "qr",
+      "condiciones_restriccion": "Solo los martes. Pago con QR Cuenta DNI o Clave DNI en caja.",
+      "segmento": null,
+      "pasos": [
+        "Abrí la app Cuenta DNI y asegurate de tener saldo disponible.",
+        "En la caja del mayorista (Nini o Vital), indicá que pagás con Cuenta DNI.",
+        "Escaneá el QR del comercio o mostrá tu código QR personal desde la sección 'Pagar'.",
+        "El 15% de descuento se aplica automáticamente al momento del pago."
+      ],
+      "requisitos": [
+        "Válido solo los martes en mayoristas Nini y Vital.",
+        "El descuento es directo en el monto final, no es reintegro posterior.",
+        "Se necesita saldo disponible en la cuenta."
+      ],
+      "activo": true, "promo": false,
+      "fecha_inicio": "2026-05-01", "fecha_expiracion": "2026-06-30",
+      "verificado": true, "reportes_error": 0,
+      "fuente": "Cronograma de beneficios Cuenta DNI / Banco Provincia · mayo 2026"
+    },
+    {
+      "id": 2,
+      "billetera_id": "Cuenta DNI", "billetera_subtitulo": "Banco Provincia",
+      "abbr": "CD", "bg": "linear-gradient(135deg,#166534,#16a34a)", "fg": "#fff",
+      "rubro": "supermercado",
+      "comercios": ["Carrefour", "Coto", "Toledo", "ChangoMás"],
+      "comercios_label": "Carrefour · Coto · Toledo · ChangoMás",
+      "tipo_beneficio": "descuento",
+      "beneficio_label": "10% – 20%",
+      "porcentaje_min": 10, "porcentaje_max": 20,
+      "tope_reintegro": null, "tope_label": "Variable por cadena",
+      "dias_semana_validos": [3, 4],
+      "metodo_pago": "qr",
+      "condiciones_restriccion": "Miércoles y jueves. Solo presencial. El % exacto varía según la cadena.",
+      "segmento": null,
+      "pasos": [
+        "Abrí la app Cuenta DNI con saldo disponible.",
+        "Dirigite a la caja o al sector de autogestión habilitado.",
+        "Escaneá el QR de la cadena con la app Cuenta DNI.",
+        "El descuento (10% o 20% según cadena) se aplica automáticamente al total de la compra."
+      ],
+      "requisitos": [
+        "Válido solo los miércoles y jueves.",
+        "El % varía según la cadena: verificar en la app para el valor exacto del día.",
+        "No aplica en compras online, solo presencial en caja.",
+        "Se requiere saldo en cuenta."
+      ],
+      "activo": true, "promo": false,
+      "fecha_inicio": "2026-05-01", "fecha_expiracion": "2026-06-30",
+      "verificado": true, "reportes_error": 0,
+      "fuente": "Cronograma de beneficios Cuenta DNI / Banco Provincia · mayo 2026"
+    },
+    {
+      "id": 3,
+      "billetera_id": "Cuenta DNI", "billetera_subtitulo": "Banco Provincia",
+      "abbr": "CD", "bg": "linear-gradient(135deg,#166534,#16a34a)", "fg": "#fff",
+      "rubro": "supermercado",
+      "comercios": ["Carnicerías adheridas", "Granjas adheridas"],
+      "comercios_label": "Carnicerías y Granjas de barrio adheridas",
+      "tipo_beneficio": "reintegro",
+      "beneficio_label": "35%",
+      "porcentaje_min": 35, "porcentaje_max": 35,
+      "tope_reintegro": null, "tope_label": "Tope semanal (verificar en app)",
+      "dias_semana_validos": [6],
+      "metodo_pago": "qr",
+      "condiciones_restriccion": "Solo los sábados en comercios de barrio adheridos. Topes semanales específicos.",
+      "segmento": null,
+      "pasos": [
+        "Abrí la app Cuenta DNI.",
+        "Realizá la compra en una carnicería o granja adherida al programa.",
+        "Pagá con el QR Cuenta DNI en el comercio.",
+        "El reintegro del 35% se acredita en tu cuenta dentro de las 48 hs."
+      ],
+      "requisitos": [
+        "Válido solo los sábados.",
+        "Los comercios deben estar adheridos al programa Cuenta DNI.",
+        "Existen topes semanales — verificar el límite vigente en la app.",
+        "El reintegro es post-compra, no descuento inmediato."
+      ],
+      "activo": true, "promo": true,
+      "fecha_inicio": "2026-05-01", "fecha_expiracion": "2026-06-30",
+      "verificado": true, "reportes_error": 0,
+      "fuente": "Cronograma de beneficios Cuenta DNI / Banco Provincia · mayo 2026"
+    },
+    {
+      "id": 4,
+      "billetera_id": "Mercado Pago", "billetera_subtitulo": "Descubrí Locales",
+      "abbr": "MP", "bg": "linear-gradient(135deg,#009de0,#22d3ee)", "fg": "#fff",
+      "rubro": "supermercado",
+      "comercios": ["Carrefour Express", "Supermercados locales geo-localizados"],
+      "comercios_label": "Carrefour Express y locales geo-localizados",
+      "tipo_beneficio": "descuento",
+      "beneficio_label": "10% – 25%",
+      "porcentaje_min": 10, "porcentaje_max": 25,
+      "tope_reintegro": null, "tope_label": "Variable por comercio",
+      "dias_semana_validos": [0,1,2,3,4,5,6],
+      "metodo_pago": "qr",
+      "condiciones_restriccion": "Geo-localizado. Mayor beneficio al pagar con dinero en cuenta.",
+      "segmento": null,
+      "pasos": [
+        "Abrí la app Mercado Pago y habilitá la ubicación del dispositivo.",
+        "Ingresá a la sección 'Descubrí' o 'Beneficios cerca tuyo'.",
+        "Buscá el supermercado con descuento activo en tu zona.",
+        "Pagá escaneando el QR del comercio — el descuento se aplica automáticamente."
+      ],
+      "requisitos": [
+        "El descuento es geo-localizado: los comercios y % varían por zona.",
+        "El mayor beneficio se obtiene pagando con dinero en cuenta (no tarjeta vinculada).",
+        "Los % y comercios disponibles cambian regularmente."
+      ],
+      "activo": true, "promo": false,
+      "fecha_inicio": "2026-05-01", "fecha_expiracion": "2026-06-30",
+      "verificado": true, "reportes_error": 0,
+      "fuente": "Programa Descubrí Locales · Mercado Pago · mayo 2026"
+    },
+    {
+      "id": 5,
+      "billetera_id": "Mercado Pago", "billetera_subtitulo": "Alianza Día%",
+      "abbr": "MP", "bg": "linear-gradient(135deg,#009de0,#22d3ee)", "fg": "#fff",
+      "rubro": "supermercado",
+      "comercios": ["Día%"],
+      "comercios_label": "Supermercados Día%",
+      "tipo_beneficio": "descuento",
+      "beneficio_label": "15%",
+      "porcentaje_min": 15, "porcentaje_max": 15,
+      "tope_reintegro": null, "tope_label": "Acumulable con Club Día",
+      "dias_semana_validos": [4],
+      "metodo_pago": "qr",
+      "condiciones_restriccion": "Solo los jueves. Acumulable con Club Día (dictar DNI en caja).",
+      "segmento": null,
+      "pasos": [
+        "Abrí Mercado Pago con dinero en cuenta disponible.",
+        "Los jueves, dirigite a cualquier sucursal de Día%.",
+        "En la caja, dictá tu DNI para activar el descuento del 'Club Día'.",
+        "Pagá con el QR de Mercado Pago — el 15% de MP y el Club Día se acumulan."
+      ],
+      "requisitos": [
+        "Válido solo los jueves en supermercados Día%.",
+        "Pagar con dinero en cuenta (no tarjeta) para acceder al beneficio Mercado Pago.",
+        "El Club Día (DNI en caja) es independiente — se acumula con el beneficio de MP.",
+        "Verificar en la app si el beneficio sigue activo para tu cuenta."
+      ],
+      "activo": true, "promo": false,
+      "fecha_inicio": "2026-05-01", "fecha_expiracion": "2026-06-30",
+      "verificado": true, "reportes_error": 0,
+      "fuente": "Alianza Mercado Pago / Día% · mayo 2026"
+    },
+    {
+      "id": 6,
+      "billetera_id": "Cencopay", "billetera_subtitulo": "Billetera Cencosud",
+      "abbr": "CX", "bg": "linear-gradient(135deg,#0f172a,#1e3a8a)", "fg": "#fff",
+      "rubro": "supermercado",
+      "comercios": ["Jumbo", "Disco", "Vea"],
+      "comercios_label": "Jumbo · Disco · Vea",
+      "tipo_beneficio": "descuento",
+      "beneficio_label": "15% – 20%",
+      "porcentaje_min": 15, "porcentaje_max": 20,
+      "tope_reintegro": null, "tope_label": "Sin tope informado",
+      "dias_semana_validos": [3, 4],
+      "metodo_pago": "qr",
+      "condiciones_restriccion": "Miércoles y jueves en Jumbo, Disco y Vea. Cuotas sin interés disponibles.",
+      "segmento": null,
+      "pasos": [
+        "Descargá la app Cencopay y creá tu cuenta vinculando tu perfil Cencosud.",
+        "Los miércoles o jueves, realizá tus compras en Jumbo, Disco o Vea.",
+        "En la caja, escaneá el QR de Cencopay desde la app.",
+        "El descuento (15% o 20%) se aplica al momento del pago.",
+        "Para cuotas sin interés, seleccioná la opción de financiación pre-aprobada dentro de la app."
+      ],
+      "requisitos": [
+        "Válido solo los miércoles y jueves.",
+        "La financiación en cuotas sin interés aplica sobre líneas de crédito pre-aprobadas en la app.",
+        "El % exacto puede variar entre supermercados y semanas."
+      ],
+      "activo": true, "promo": false,
+      "fecha_inicio": "2026-05-01", "fecha_expiracion": "2026-06-30",
+      "verificado": true, "reportes_error": 0,
+      "fuente": "Beneficios Cencopay / Cencosud · mayo 2026"
+    },
+    {
+      "id": 7,
+      "billetera_id": "Personal Pay", "billetera_subtitulo": "Niveles de consumo",
+      "abbr": "PP", "bg": "linear-gradient(135deg,#0050d8,#60a5fa)", "fg": "#fff",
+      "rubro": "supermercado",
+      "comercios": ["Coto", "Carrefour", "Cadenas nacionales adheridas"],
+      "comercios_label": "Coto · Carrefour · cadenas adheridas",
+      "tipo_beneficio": "descuento",
+      "beneficio_label": "Hasta 25%",
+      "porcentaje_min": 0, "porcentaje_max": 25,
+      "tope_reintegro": null, "tope_label": "Tope mensual por nivel",
+      "dias_semana_validos": [0,1,2,3,4,5,6],
+      "metodo_pago": "tarjeta",
+      "condiciones_restriccion": "El descuento máximo del 25% requiere Nivel 3. Reintegros topificados por nivel.",
+      "segmento": "Nivel 3 para máximo beneficio",
+      "pasos": [
+        "Descargá la app Personal Pay y activá tu tarjeta prepaga Visa.",
+        "Verificá tu nivel de consumo (Nivel 1, 2 o 3) en la sección 'Beneficios' de la app.",
+        "Usá la tarjeta Personal Pay o el QR asociado para pagar en Coto, Carrefour u otras cadenas adheridas.",
+        "El descuento se aplica automáticamente según tu nivel activo."
+      ],
+      "requisitos": [
+        "El descuento máximo del 25% corresponde al Nivel 3.",
+        "Cada nivel tiene reintegros topificados mensualmente — verificar el tope en la app.",
+        "Aplica en todas las cadenas nacionales adheridas al programa.",
+        "El nivel puede cambiar mensualmente según el consumo acumulado."
+      ],
+      "activo": true, "promo": false,
+      "fecha_inicio": "2026-05-01", "fecha_expiracion": "2026-06-30",
+      "verificado": true, "reportes_error": 0,
+      "fuente": "Programa Personal Pay · niveles de consumo · mayo 2026"
+    },
+    {
+      "id": 8,
+      "billetera_id": "Prex", "billetera_subtitulo": "Mastercard prepaga",
+      "abbr": "PX", "bg": "linear-gradient(135deg,#6d28d9,#8b5cf6)", "fg": "#fff",
+      "rubro": "supermercado",
+      "comercios": ["Fast food adheridos", "Supermercados regionales adheridos"],
+      "comercios_label": "Fast food y supermercados regionales adheridos",
+      "tipo_beneficio": "descuento",
+      "beneficio_label": "10% – 20%",
+      "porcentaje_min": 10, "porcentaje_max": 20,
+      "tope_reintegro": null, "tope_label": "Según cupón activo",
+      "dias_semana_validos": [0,1,2,3,4,5,6],
+      "metodo_pago": "tarjeta",
+      "condiciones_restriccion": "Activar cupón previo en la app. El % varía por comercio y cupón.",
+      "segmento": null,
+      "pasos": [
+        "Descargá la app Prex y activá tu tarjeta Mastercard.",
+        "Ingresá a la sección 'Cupones' y activá el cupón del comercio que querés usar.",
+        "Realizá la compra en el comercio adherido.",
+        "El descuento se aplica al momento del pago (o como cashback inmediato según el cupón)."
+      ],
+      "requisitos": [
+        "Los cupones deben activarse previamente desde la app.",
+        "El % varía según el comercio y el cupón activo.",
+        "Algunos descuentos son cashback inmediato; otros son descuento directo.",
+        "Los cupones tienen vigencia limitada — verificar en la app."
+      ],
+      "activo": true, "promo": false,
+      "fecha_inicio": "2026-05-01", "fecha_expiracion": "2026-06-30",
+      "verificado": true, "reportes_error": 0,
+      "fuente": "Programa de cupones Prex · mayo 2026"
+    },
+    {
+      "id": 9,
+      "billetera_id": "Cencopay", "billetera_subtitulo": "Tarjeta Cencosud · Tech",
+      "abbr": "CX", "bg": "linear-gradient(135deg,#0f172a,#1e3a8a)", "fg": "#fff",
+      "rubro": "tecnologia",
+      "comercios": ["Jumbo Tech", "Disco", "Vea"],
+      "comercios_label": "Jumbo · Disco · Vea · sección electrodomésticos",
+      "tipo_beneficio": "descuento",
+      "beneficio_label": "10% + Cuotas",
+      "porcentaje_min": 10, "porcentaje_max": 10,
+      "tope_reintegro": null, "tope_label": "Sin tope informado",
+      "dias_semana_validos": [3, 4],
+      "metodo_pago": "tarjeta",
+      "condiciones_restriccion": "Miércoles y jueves. Aplica en categorías de electrodomésticos y tecnología seleccionadas.",
+      "segmento": null,
+      "pasos": [
+        "Usá la tarjeta Cencosud o la app Cencopay en Jumbo, Disco o Vea.",
+        "Accedé al sector de electrodomésticos o tecnología del local.",
+        "Al pagar, indicá que querés usar cuotas sin interés con tu tarjeta Cencosud.",
+        "El 10% de descuento extra se aplica sobre el precio final en cuotas."
+      ],
+      "requisitos": [
+        "Los miércoles y jueves se aplica el 10% extra en tecnología.",
+        "Las cuotas sin interés aplican sobre líneas de crédito pre-aprobadas en la app.",
+        "Válido solo en categorías de electrodomésticos y tecnología seleccionadas.",
+        "El número de cuotas sin interés disponibles puede variar."
+      ],
+      "activo": true, "promo": false,
+      "fecha_inicio": "2026-05-01", "fecha_expiracion": "2026-06-30",
+      "verificado": true, "reportes_error": 0,
+      "fuente": "Beneficios Cencopay / Cencosud · sección tecnología · mayo 2026"
+    },
+    {
+      "id": 10,
+      "billetera_id": "MODO / Bancos", "billetera_subtitulo": "Tiendas bancarias adheridas",
+      "abbr": "MO", "bg": "linear-gradient(135deg,#1e3a8a,#1d4ed8)", "fg": "#fff",
+      "rubro": "tecnologia",
+      "comercios": ["Tienda BNA", "Tienda Galicia", "Macro Premia", "BBVA Shop"],
+      "comercios_label": "Tienda BNA · Tienda Galicia · Macro Premia · BBVA Shop",
+      "tipo_beneficio": "reintegro",
+      "beneficio_label": "10% – 20%",
+      "porcentaje_min": 10, "porcentaje_max": 20,
+      "tope_reintegro": null, "tope_label": "+ Cuotas 9 / 12 / 18 sin interés",
+      "dias_semana_validos": [0,1,2,3,4,5,6],
+      "metodo_pago": "boton_pago",
+      "condiciones_restriccion": "Acciones relámpago periódicas. El reintegro aplica con tarjeta del banco asociado.",
+      "segmento": null,
+      "pasos": [
+        "Descargá MODO o accedé a la app de tu banco adherido (BNA, Galicia, Macro, BBVA).",
+        "Ingresá a la tienda online del banco (Tienda BNA, Tienda Galicia, Macro Premia, BBVA Shop).",
+        "Elegí el producto de tecnología y seleccioná la cuota sin interés disponible (9, 12 o 18 cuotas).",
+        "En el checkout, usá el botón de pago MODO o la tarjeta vinculada del banco para completar la compra."
+      ],
+      "requisitos": [
+        "Disponible en acciones relámpago periódicas — verificar vigencia en la app del banco.",
+        "El reintegro (10%-20%) se acredita en la cuenta dentro de los 30 días.",
+        "Las cuotas sin interés aplican sobre tarjetas de crédito del banco asociado.",
+        "Cada banco tiene sus propias condiciones y calendarios de acciones."
+      ],
+      "activo": true, "promo": false,
+      "fecha_inicio": "2026-05-01", "fecha_expiracion": "2026-06-30",
+      "verificado": true, "reportes_error": 0,
+      "fuente": "Ecosistema MODO / tiendas bancarias · mayo 2026"
+    },
+    {
+      "id": 11,
+      "billetera_id": "Ualá", "billetera_subtitulo": "Mastercard · Ualá Más",
+      "abbr": "UA", "bg": "linear-gradient(135deg,#ff6b35,#f97316)", "fg": "#fff",
+      "rubro": "tecnologia",
+      "comercios": ["Tiendas de tecnología adheridas", "Steam", "PlayStation Network", "Xbox"],
+      "comercios_label": "Tech stores · Steam · PlayStation · Xbox",
+      "tipo_beneficio": "cashback",
+      "beneficio_label": "Variable",
+      "porcentaje_min": null, "porcentaje_max": null,
+      "tope_reintegro": null, "tope_label": "Vouchers por puntos Ualá Más",
+      "dias_semana_validos": [0,1,2,3,4,5,6],
+      "metodo_pago": "tarjeta",
+      "condiciones_restriccion": "Descuentos variables por comercio. Puntos canjeables por vouchers en retailers.",
+      "segmento": null,
+      "pasos": [
+        "Usá tu tarjeta Mastercard Ualá (física o virtual) para pagar en tiendas tech o plataformas gaming.",
+        "En Steam, PS Store o Xbox Store: agregá la tarjeta como método de pago habitual.",
+        "Los cashbacks post-compra se acreditan automáticamente en tu cuenta Ualá.",
+        "Los puntos 'Ualá Más' acumulados se canjean por vouchers de descuento en retailers tecnológicos desde la app."
+      ],
+      "requisitos": [
+        "Los descuentos y vouchers aplican solo en comercios y plataformas adheridas al programa 'Ualá Más'.",
+        "El porcentaje de descuento es variable según la campaña activa.",
+        "Los vouchers canjeables tienen vigencia limitada — verificar en la app.",
+        "Para plataformas de gaming, se requiere que la tarjeta esté cargada en la cuenta de la plataforma."
+      ],
+      "activo": true, "promo": false,
+      "fecha_inicio": "2026-05-01", "fecha_expiracion": "2026-06-30",
+      "verificado": false, "reportes_error": 0,
+      "fuente": "Programa Ualá Más · tecnología y gaming · sujeto a verificación"
+    }
+  ]
+}

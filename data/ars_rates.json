@@ -1,0 +1,447 @@
+{
+  "sourceLabel": "HTTP Fetch (comparadores web) · BADLAR 20.69% · 2026-05-29",
+  "lastScraperRun": "2026-05-29T06:00:00.106Z",
+  "scraperStatus": {
+    "Lemon Cash": "ok (16.73% TNA)",
+    "Prex": "ok (17.7% TNA)",
+    "N1U": "ok (16.1% TNA)",
+    "IEB+": "ok (17.65% TNA)",
+    "Claro Pay": "ok (17.12% TNA)"
+  },
+  "items": [
+    {
+      "app": "Cocos Capital",
+      "type": "fci",
+      "section": "variable",
+      "spread": 1.58,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "FCI Renta Mixta T+0"
+    },
+    {
+      "app": "IOL",
+      "type": "fci",
+      "section": "variable",
+      "spread": 0.86,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "IOL Cash FCI Money Market T+0"
+    },
+    {
+      "app": "Adcap",
+      "type": "fci",
+      "section": "variable",
+      "spread": -2.86,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Adcap Fondo Dinero T+0 · fusionó con Banza"
+    },
+    {
+      "app": "Global66",
+      "type": "fci",
+      "section": "variable",
+      "spread": -2.96,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "FCI Money Market T+0"
+    },
+    {
+      "app": "Personal Pay",
+      "type": "fci",
+      "section": "variable",
+      "spread": -3.29,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "FCI MM · requiere cuenta nivel 2+"
+    },
+    {
+      "app": "Mercado Pago",
+      "type": "fci",
+      "section": "variable",
+      "spread": -3.37,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "FCI Mercado Fondo T+0"
+    },
+    {
+      "app": "Toronto Trust",
+      "type": "fci",
+      "section": "variable",
+      "spread": -3.39,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Toronto Ahorro FCI MM T+0"
+    },
+    {
+      "app": "IEB+",
+      "type": "fci",
+      "section": "variable",
+      "spread": -3.04,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "FCI Money Market T+0",
+      "lastUpdated": "2026-05-29",
+      "src": "http"
+    },
+    {
+      "app": "Balanz",
+      "type": "fci",
+      "section": "variable",
+      "spread": -4.09,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "FCI Balanz Ahorro T+0"
+    },
+    {
+      "app": "Claro Pay",
+      "type": "fci",
+      "section": "variable",
+      "spread": -3.57,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "FCI Money Market T+0",
+      "lastUpdated": "2026-05-29",
+      "src": "http"
+    },
+    {
+      "app": "PPI",
+      "type": "fci",
+      "section": "variable",
+      "spread": -4.06,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "FCI Money Market T+0 · Portfolio Personal"
+    },
+    {
+      "app": "Bull Market",
+      "type": "fci",
+      "section": "variable",
+      "spread": -4.06,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "FCI Money Market T+0"
+    },
+    {
+      "app": "Lemon Cash",
+      "type": "fci",
+      "section": "variable",
+      "spread": -3.96,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "FCI Lemon Ahorro T+0",
+      "lastUpdated": "2026-05-29",
+      "src": "http"
+    },
+    {
+      "app": "N1U",
+      "type": "fci",
+      "section": "variable",
+      "spread": -4.59,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "FCI Money Market T+0",
+      "lastUpdated": "2026-05-29",
+      "src": "http"
+    },
+    {
+      "app": "AstroPay",
+      "type": "fci",
+      "section": "variable",
+      "spread": -6.28,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "FCI MM · administrado por Southern Trust"
+    },
+    {
+      "app": "LB Finanzas",
+      "type": "fci",
+      "section": "variable",
+      "spread": -6.28,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "FCI Money Market T+0 · ex Let's Bit · broker ALyC"
+    },
+    {
+      "app": "Prex",
+      "type": "cuenta",
+      "section": "variable",
+      "spread": -2.99,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Cuenta remunerada diaria",
+      "lastUpdated": "2026-05-29",
+      "src": "http"
+    },
+    {
+      "app": "Cuenta DNI",
+      "type": "cuenta",
+      "section": "variable",
+      "spread": -2.06,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Banco Provincia · acreditación diaria"
+    },
+    {
+      "app": "Reba",
+      "type": "cuenta",
+      "section": "variable",
+      "spread": -2.56,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Cuenta remunerada diaria"
+    },
+    {
+      "app": "Naranja X",
+      "type": "cuenta",
+      "section": "variable",
+      "spread": -3.56,
+      "promo": false,
+      "limit": "Hasta $750.000",
+      "info": "Tope mensual al saldo remunerado"
+    },
+    {
+      "app": "Carrefour Banco",
+      "type": "cuenta",
+      "section": "variable",
+      "spread": -3.56,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Cuenta Digital Mi Carrefour · BSF regulado BCRA"
+    },
+    {
+      "app": "Brubank",
+      "type": "cuenta",
+      "section": "variable",
+      "spread": -5.06,
+      "promo": false,
+      "limit": "Hasta $500.000",
+      "info": "Acreditación automática 24/7"
+    },
+    {
+      "app": "Crédito Regional",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": 3.94,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Compañía Financiera · Plazo Fijo 30d · tasa líder"
+    },
+    {
+      "app": "Banco VOII",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": 3.44,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Banco Regional · Plazo Fijo 30d digital"
+    },
+    {
+      "app": "Banco Meridian",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": 2.44,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Banco Regional · Plazo Fijo 30d"
+    },
+    {
+      "app": "Bibank",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": 2.44,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Banco Digital · Plazo Fijo 30d"
+    },
+    {
+      "app": "Banco Masventas",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": 2.44,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Banco Regional · Plazo Fijo 30d"
+    },
+    {
+      "app": "Banco CMF",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": 1.69,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Banco · Plazo Fijo 30d"
+    },
+    {
+      "app": "Banco Bica",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": 1.44,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Banco Regional · Cuenta Click disponible"
+    },
+    {
+      "app": "Banco Del Sol",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": 0.44,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Banco Digital · Plazo Fijo 30d"
+    },
+    {
+      "app": "Banco Mariva",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": -0.56,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Banco · Plazo Fijo 30d"
+    },
+    {
+      "app": "Banco Provincia",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": -2.06,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Banco Provincial BsAs · PF online y sucursal"
+    },
+    {
+      "app": "Banco Hipotecario",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": -2.56,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Banco Nacional · Plazo Fijo 30d"
+    },
+    {
+      "app": "Banco Macro",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": -2.56,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Plazo Fijo 30d · sucursales y app"
+    },
+    {
+      "app": "ICBC",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": -2.76,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Banco Internacional · Plazo Fijo online"
+    },
+    {
+      "app": "BBVA",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": -2.81,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Plazo Fijo online y sucursal"
+    },
+    {
+      "app": "Banco Nación",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": -3.06,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Plazo Fijo 30d · sucursales nacionales"
+    },
+    {
+      "app": "Banco Galicia",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": -3.31,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Plazo Fijo 30d · sucursales y app"
+    },
+    {
+      "app": "Banco Ciudad",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": -3.56,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Banco Municipal GCBA · Plazo Fijo 30d"
+    },
+    {
+      "app": "Banco Comafi",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": -3.56,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Banco Nacional · Plazo Fijo 30d"
+    },
+    {
+      "app": "Supervielle",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": -3.56,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Banco Nacional · Plazo Fijo 30d y app"
+    },
+    {
+      "app": "Fiwind",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": -5.36,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Plazo Fijo Digital, mínimo 30 días"
+    },
+    {
+      "app": "Bind",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": -5.06,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Banco Industrial · Plazo Fijo Digital 30d"
+    },
+    {
+      "app": "Banco Credicoop",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": -4.06,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Banco Cooperativo · Plazo Fijo 30d"
+    },
+    {
+      "app": "Banco Patagonia",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": -4.06,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Banco Nacional · Plazo Fijo 30d"
+    },
+    {
+      "app": "Santander",
+      "type": "plazo",
+      "section": "garantizado",
+      "spread": -6.56,
+      "promo": false,
+      "limit": "Sin Límite",
+      "info": "Plazo Fijo online y sucursal"
+    },
+    {
+      "app": "Ualá",
+      "type": "cuenta",
+      "section": "especial",
+      "spread": 4.44,
+      "promo": true,
+      "limit": "Hasta $3.000.000",
+      "info": "Tasa promo 90 días, solo nuevos usuarios",
+      "condicion": "Solo nuevos usuarios · Primeros 90 días"
+    }
+  ]
+}
