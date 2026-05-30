@@ -2204,6 +2204,9 @@ function App() {
   const [fuelModal,          setFuelModal]          = useState(null);
   const [fuelHoyExp,         setFuelHoyExp]         = useState(false);
   const [fuelHoyCollapsing,  setFuelHoyCollapsing]  = useState(false);
+  const [appSearch,          setAppSearch]          = useState('');
+  const [notifyEmail,        setNotifyEmail]        = useState('');
+  const [notifySent,         setNotifySent]         = useState(false);
   const [movilidadHoyExp,    setMovilidadHoyExp]    = useState(false);
   const [movilidadHoyCollapsing, setMovilidadHoyCollapsing] = useState(false);
   const [promoHoyExp,        setPromoHoyExp]        = useState(false);
@@ -4305,7 +4308,6 @@ function App() {
             {/* ── APLICACIONES ── */}
             {activeTab === 'aplicaciones' && (() => {
               const TYPE_LABEL = { cuenta:'Cta. Remunerada', fci:'FCI', plazo:'Plazo Fijo', crypto:'Crypto', on:'ON Corp.' };
-              const [appSearch, setAppSearch] = React.useState('');
               const normalize = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
               const allApps = Object.entries(APP_META);
               const filtered = appSearch.trim()
@@ -5935,8 +5937,6 @@ function App() {
 
             {(activeTab === 'carteras' || activeTab === 'calc') && (() => {
               const label = activeTab === 'calc' ? 'Calculadora de Inversiones' : 'Gestión de Carteras';
-              const [notifyEmail, setNotifyEmail] = React.useState('');
-              const [notifySent,  setNotifySent]  = React.useState(false);
               return (
                 <div style={{
                   background:'var(--surface)', border:'1px solid var(--border)', borderRadius:2,
