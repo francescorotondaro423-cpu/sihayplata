@@ -160,6 +160,22 @@
     /* ── base overflow prevention ── */
     html, body { overflow-x: hidden; max-width: 100%; }
 
+    /* P5 — eliminar tap highlight azul/gris en iOS y Android */
+    * { -webkit-tap-highlight-color: transparent; }
+
+    /* P6 — scroll hint: fade derecho en navs scrolleables */
+    .nav-scroll {
+      -webkit-mask-image: linear-gradient(to right, black 88%, transparent 100%);
+      mask-image: linear-gradient(to right, black 88%, transparent 100%);
+    }
+
+    /* P4 — touch targets mínimos 44px en mobile */
+    @media (max-width: 767px) {
+      .rank-row td button { min-height: 44px; padding-top: 10px; padding-bottom: 10px; }
+      .sec-nav-btn        { min-height: 44px; }
+      .nav-scroll button  { min-height: 40px; }
+    }
+
     /* ── fluid page wrapper ── */
     .page-wrap { padding-left: clamp(12px, 3vw, 24px); padding-right: clamp(12px, 3vw, 24px); }
 
@@ -587,7 +603,7 @@ function SimModal({ item, currency, onClose, t }) {
               style={{
                 width:'100%', paddingLeft:40, paddingRight:12, paddingTop:10, paddingBottom:10,
                 background:'#f8fafc', border:'1px solid #e2e8f0', borderRadius:2,
-                color:'#0f172a', fontSize:15, fontWeight:700, outline:'none', fontFamily:'inherit',
+                color:'#0f172a', fontSize:16, fontWeight:700, outline:'none', fontFamily:'inherit',
               }}
             />
           </div>
@@ -604,7 +620,7 @@ function SimModal({ item, currency, onClose, t }) {
                 onBlur={e => { if (!e.target.value) setDays(1); }}
                 style={{
                   width:52, padding:'2px 4px', background:'#f8fafc', border:'1px solid #b8e070',
-                  borderRadius:2, color:'#44685c', fontSize:13, fontWeight:800, textAlign:'center',
+                  borderRadius:2, color:'#44685c', fontSize:16, fontWeight:800, textAlign:'center',
                   fontFamily:'inherit', outline:'none',
                 }}
               />
@@ -625,7 +641,7 @@ function SimModal({ item, currency, onClose, t }) {
               <span key={d} style={{
                 position:'absolute',
                 left:`${(d - 1) / 364 * 100}%`,
-                transform:'translateX(-50%)',
+                transform: d === 1 ? 'translateX(0)' : d === 365 ? 'translateX(-100%)' : 'translateX(-50%)',
                 fontSize:10,
                 color: days === d ? '#44685c' : '#94a3b8',
                 fontWeight: days === d ? 700 : 400,
@@ -2436,6 +2452,7 @@ function App() {
             background:'var(--surface)', zIndex:39,
             borderRight:'1px solid var(--border)',
             display:'flex', flexDirection:'column',
+            overflowY:'auto', overscrollBehavior:'contain',
             animation: menuClosing
               ? 'slideOutLeft .22s ease-in forwards'
               : 'slideInLeft .26s ease-out',
@@ -3273,7 +3290,7 @@ function App() {
             {/* Center: logo */}
             <a href="/" style={{ display:'block', textDecoration:'none' }}>
               <img src="/titulo6.png" alt="SiHayPlata" style={{
-                height: isMobile ? 54 : 90, width:'auto', display:'block',
+                height: isMobile ? 'clamp(42px, 11vw, 54px)' : 'clamp(64px, 7vw, 90px)', width:'auto', display:'block',
                 transition:'transform .25s cubic-bezier(.34,1.56,.64,1)',
               }}
                 onMouseEnter={e => e.currentTarget.style.transform='scale(1.03)'}
@@ -3863,16 +3880,16 @@ function App() {
 
                       {/* Compra | Venta */}
                       <div style={{ display:'flex', alignItems:'stretch' }}>
-                        <div style={{ flex:1, padding:'20px 24px' }}>
+                        <div style={{ flex:1, padding:'16px clamp(12px,4vw,24px)' }}>
                           <div style={{ fontSize:12, color:'#94a3b8', fontWeight:600, letterSpacing:'.08em', marginBottom:6 }}>COMPRA</div>
-                          <div style={{ fontSize:'2.2rem', fontWeight:900, color:'#0f172a', letterSpacing:'-1.5px', lineHeight:1 }}>
+                          <div style={{ fontSize:'clamp(1.5rem,5vw,2.2rem)', fontWeight:900, color:'#0f172a', letterSpacing:'-1.5px', lineHeight:1 }}>
                             {fmtP(d?.compra)}
                           </div>
                         </div>
                         <div style={{ width:1, background:'#f1f5f9' }} />
-                        <div style={{ flex:1, padding:'20px 24px' }}>
+                        <div style={{ flex:1, padding:'16px clamp(12px,4vw,24px)' }}>
                           <div style={{ fontSize:12, color:'#94a3b8', fontWeight:600, letterSpacing:'.08em', marginBottom:6 }}>VENTA</div>
-                          <div style={{ fontSize:'2.2rem', fontWeight:900, color: tp?.color, letterSpacing:'-1.5px', lineHeight:1 }}>
+                          <div style={{ fontSize:'clamp(1.5rem,5vw,2.2rem)', fontWeight:900, color: tp?.color, letterSpacing:'-1.5px', lineHeight:1 }}>
                             {fmtP(d?.venta)}
                           </div>
                         </div>
@@ -4157,8 +4174,8 @@ function App() {
                     {/* cabecera */}
                     <div style={{ display:'flex', alignItems:'center', padding:'9px 16px', background:'#fafafa', borderBottom:'2px solid #f1f5f9', gap:14 }}>
                       <div style={{ flex:1 }} />
-                      <div style={{ width:88, textAlign:'right', fontSize:11, fontWeight:700, color:'#94a3b8', letterSpacing:'.07em' }}>ARS TNA</div>
-                      <div style={{ width:88, textAlign:'right', fontSize:11, fontWeight:700, color:'#94a3b8', letterSpacing:'.07em' }}>USD TNA</div>
+                      <div style={{ width:72, textAlign:'right', fontSize:11, fontWeight:700, color:'#94a3b8', letterSpacing:'.07em' }}>ARS TNA</div>
+                      {!isMobile && <div style={{ width:72, textAlign:'right', fontSize:11, fontWeight:700, color:'#94a3b8', letterSpacing:'.07em' }}>USD TNA</div>}
                     </div>
 
                     {Object.entries(APP_META).map(([name], i, arr) => {
@@ -4174,25 +4191,27 @@ function App() {
                           onMouseEnter={e => e.currentTarget.style.background='#f8fafc'}
                           onMouseLeave={e => e.currentTarget.style.background='none'}
                         >
-                          <AppLogo app={name} size={34} />
+                          <AppLogo app={name} size={isMobile ? 28 : 34} />
                           <div style={{ flex:1, minWidth:0 }}>
-                            <div style={{ fontWeight:700, fontSize:14, color:'#0f172a' }}>{name}</div>
-                            {types.length > 0 && (
+                            <div style={{ fontWeight:700, fontSize: isMobile ? 13 : 14, color:'#0f172a', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{name}</div>
+                            {!isMobile && types.length > 0 && (
                               <div style={{ fontSize:11, color:'#94a3b8', marginTop:2 }}>{types.join(' · ')}</div>
                             )}
                           </div>
-                          <div style={{ width:88, textAlign:'right' }}>
+                          <div style={{ width:72, textAlign:'right' }}>
                             {arsItem ? (
                               <span style={{ fontWeight:800, fontSize:15, color:'#44685c' }}>
                                 {arsItem.tna != null ? `${typeof arsItem.tna.toFixed === 'function' ? arsItem.tna.toFixed(1) : arsItem.tna}%` : '—'}
                               </span>
                             ) : <span style={{ color:'#cbd5e1', fontSize:14 }}>—</span>}
                           </div>
-                          <div style={{ width:88, textAlign:'right' }}>
-                            {usdItem ? (
-                              <span style={{ fontWeight:800, fontSize:15, color:'#0f766e' }}>{usdItem.tna}%</span>
-                            ) : <span style={{ color:'#cbd5e1', fontSize:14 }}>—</span>}
-                          </div>
+                          {!isMobile && (
+                            <div style={{ width:72, textAlign:'right' }}>
+                              {usdItem ? (
+                                <span style={{ fontWeight:800, fontSize:15, color:'#0f766e' }}>{usdItem.tna}%</span>
+                              ) : <span style={{ color:'#cbd5e1', fontSize:14 }}>—</span>}
+                            </div>
+                          )}
                         </div>
                       );
                     })}
@@ -5801,7 +5820,7 @@ function App() {
                   <span key={label} style={{ display:'flex', alignItems:'center' }}>
                     <button onClick={onClick} style={{
                       fontSize: 12, color: 'var(--txt-2)', cursor: 'pointer',
-                      padding: '4px 12px', background: 'none', border: 'none',
+                      padding: '10px 12px', minHeight: 44, background: 'none', border: 'none',
                       fontFamily: 'inherit', transition: 'color .15s',
                     }}
                       onMouseEnter={e => e.currentTarget.style.color='#44685c'}
