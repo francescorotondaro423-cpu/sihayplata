@@ -2911,14 +2911,14 @@ function App() {
               onMouseUp={e => e.currentTarget.style.transform='scale(1)'}
             >Explorar Beneficios →</button>
             <button onClick={() => closeSplash(false)} style={{
-              flex:'0 0 auto', padding:'17px 24px', borderRadius:12, cursor:'pointer',
-              fontFamily:'inherit', fontWeight:600, fontSize:15,
-              background:'none', color:'#94a3b8',
-              border:'2px solid #e2e8f0',
-              transition:'border-color .15s, color .15s',
+              flex:'0 0 auto', padding:'17px 28px', borderRadius:12, cursor:'pointer',
+              fontFamily:'inherit', fontWeight:700, fontSize:15,
+              background:'#f1f5f9', color:'#475569',
+              border:'2px solid #cbd5e1',
+              transition:'background .15s, color .15s, border-color .15s',
             }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor='#44685c'; e.currentTarget.style.color='#44685c'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor='#e2e8f0'; e.currentTarget.style.color='#94a3b8'; }}
+              onMouseEnter={e => { e.currentTarget.style.background='#e2e8f0'; e.currentTarget.style.color='#0f172a'; e.currentTarget.style.borderColor='#94a3b8'; }}
+              onMouseLeave={e => { e.currentTarget.style.background='#f1f5f9'; e.currentTarget.style.color='#475569'; e.currentTarget.style.borderColor='#cbd5e1'; }}
             >Omitir</button>
           </div>
         </div>
