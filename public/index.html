@@ -4735,71 +4735,6 @@ function App() {
                   {/* Modal de verificación */}
                   {verifyModal && <VerifyModal item={verifyModal} />}
 
-                  {/* ─── SECCIÓN HOY ─── */}
-                  <div style={{ background:'linear-gradient(135deg,#44685c,#2d4a40)', borderRadius:8, padding:'14px 16px', marginBottom:18 }}>
-                    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10, flexWrap:'wrap', gap:6 }}>
-                      <div>
-                        <div style={{ fontSize:9, color:'rgba(255,255,255,.5)', fontWeight:700, letterSpacing:'.12em', textTransform:'uppercase' }}>Activas hoy mismo</div>
-                        <div style={{ display:'flex', alignItems:'baseline', gap:8, marginTop:1 }}>
-                          <span style={{ fontSize:16, fontWeight:900, color:'#fff' }}>HOY — {dateStr}</span>
-                          <span style={{ fontSize:10, color:'rgba(255,255,255,.5)' }}>{dayName} · {todayPromos.length} activas</span>
-                        </div>
-                      </div>
-                      {promotionsLoading && (
-                        <div style={{ display:'flex', gap:4 }}>
-                          {[0,1,2].map(i => <div key={i} style={{ width:4, height:4, borderRadius:'50%', background:'rgba(255,255,255,.4)', animation:`blink 1.2s ease-in-out ${i*.2}s infinite` }} />)}
-                        </div>
-                      )}
-                    </div>
-                    {todayPromos.length > 0 ? (() => {
-                      const HOY_LIMIT  = 8;
-                      const hoyVisible = (promoHoyExp || promoHoyCollapsing)
-                        ? todayPromos : todayPromos.slice(0, HOY_LIMIT);
-                      const hidden = todayPromos.length - HOY_LIMIT;
-                      const togglePromoHoy = () => {
-                        if (promoHoyExp) {
-                          setPromoHoyCollapsing(true);
-                          setTimeout(() => { setPromoHoyExp(false); setPromoHoyCollapsing(false); }, 220);
-                        } else {
-                          setPromoHoyExp(true);
-                        }
-                      };
-                      return (
-                        <>
-                          <div style={{ display:'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : 'repeat(auto-fill,minmax(160px,1fr))', gap:6 }}>
-                            {hoyVisible.map((p, idx) => {
-                              const isNew     = promoHoyExp && !promoHoyCollapsing && idx >= HOY_LIMIT;
-                              const isLeaving = promoHoyCollapsing && idx >= HOY_LIMIT;
-                              const delay     = `${(idx - HOY_LIMIT) * 28}ms`;
-                              return (
-                                <div key={p.id} style={
-                                  isLeaving ? { animation:`slideDownOut2 .18s ease-in both`,    animationDelay: delay }
-                                  : isNew   ? { animation:`slideUp .22s ease-out both`,          animationDelay: delay }
-                                  : {}
-                                }>
-                                  <HoyCard item={p} />
-                                </div>
-                              );
-                            })}
-                          </div>
-                          {hidden > 0 && (
-                            <button onClick={togglePromoHoy}
-                              style={{ marginTop:8, width:'100%', padding:'6px 0', background:'rgba(255,255,255,.08)', border:'1px solid rgba(255,255,255,.15)', borderRadius:6, color:'rgba(255,255,255,.75)', fontSize:11, fontWeight:600, cursor:'pointer', fontFamily:'inherit', transition:'background .15s, transform .1s' }}
-                              onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,.14)'}
-                              onMouseLeave={e=>e.currentTarget.style.background='rgba(255,255,255,.08)'}
-                              onMouseDown={e=>e.currentTarget.style.transform='scale(.98)'}
-                              onMouseUp={e=>e.currentTarget.style.transform='scale(1)'}
-                            >
-                              {promoHoyExp ? '▲ Mostrar menos' : `▼ Ver ${hidden} más (${todayPromos.length} total)`}
-                            </button>
-                          )}
-                        </>
-                      );
-                    })() : promotionsItems ? (
-                      <div style={{ fontSize:12, color:'rgba(255,255,255,.5)', textAlign:'center', padding:'8px 0' }}>Sin promociones activas para hoy · {dayName}</div>
-                    ) : null}
-                  </div>
-
                   {/* ─── CATEGORÍAS + BUSCADOR ─── */}
                   <div style={{ display:'flex', gap:10, marginBottom:10, flexWrap:'wrap', alignItems:'center' }}>
                     <div style={{ flex:1, minWidth:200, position:'relative' }}>
@@ -5261,62 +5196,6 @@ function App() {
                 <div className="fade-in">
                   {fuelModal && <FuelVerifyModal item={fuelModal}/>}
 
-                  {/* ─── SECCIÓN HOY ─── */}
-                  <div style={{ background:'linear-gradient(135deg,#1c1917,#451a03)', borderRadius:8, padding:'14px 16px', marginBottom:18 }}>
-                    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10, flexWrap:'wrap', gap:6 }}>
-                      <div>
-                        <div style={{ fontSize:9, color:'rgba(255,255,255,.5)', fontWeight:700, letterSpacing:'.12em', textTransform:'uppercase' }}>Activos hoy mismo</div>
-                        <div style={{ display:'flex', alignItems:'baseline', gap:8, marginTop:1 }}>
-                          <span style={{ fontSize:16, fontWeight:900, color:'#fff' }}>HOY — {dateStr}</span>
-                          <span style={{ fontSize:10, color:'rgba(255,255,255,.5)' }}>{dayName} · {todayFuel.length} activos</span>
-                        </div>
-                      </div>
-                      {fuelLoading && (
-                        <div style={{ display:'flex', gap:4 }}>
-                          {[0,1,2].map(i=><div key={i} style={{ width:4,height:4,borderRadius:'50%',background:'rgba(255,255,255,.4)',animation:`blink 1.2s ease-in-out ${i*.2}s infinite` }}/>)}
-                        </div>
-                      )}
-                    </div>
-                    {todayFuel.length > 0 ? (() => {
-                      const HOY_LIMIT  = 8;
-                      const hoyVisible = (fuelHoyExp || fuelHoyCollapsing) ? todayFuel : todayFuel.slice(0, HOY_LIMIT);
-                      const hidden     = todayFuel.length - HOY_LIMIT;
-                      const toggleFuelHoy = () => {
-                        if (fuelHoyExp) {
-                          setFuelHoyCollapsing(true);
-                          setTimeout(()=>{ setFuelHoyExp(false); setFuelHoyCollapsing(false); }, 220);
-                        } else { setFuelHoyExp(true); }
-                      };
-                      return (
-                        <>
-                          <div style={{ display:'grid', gridTemplateColumns:isMobile?'repeat(2,1fr)':'repeat(auto-fill,minmax(160px,1fr))', gap:6 }}>
-                            {hoyVisible.map((p,idx)=>{
-                              const isNew     = fuelHoyExp && !fuelHoyCollapsing && idx >= HOY_LIMIT;
-                              const isLeaving = fuelHoyCollapsing && idx >= HOY_LIMIT;
-                              const delay     = `${(idx-HOY_LIMIT)*28}ms`;
-                              return (
-                                <div key={p.id} style={isLeaving?{animation:`slideDownOut2 .18s ease-in both`,animationDelay:delay}:isNew?{animation:`slideUp .22s ease-out both`,animationDelay:delay}:{}}>
-                                  <FuelHoyCard item={p}/>
-                                </div>
-                              );
-                            })}
-                          </div>
-                          {hidden > 0 && (
-                            <button onClick={toggleFuelHoy}
-                              style={{ marginTop:8, width:'100%', padding:'6px 0', background:'rgba(255,255,255,.08)', border:'1px solid rgba(255,255,255,.15)', borderRadius:6, color:'rgba(255,255,255,.75)', fontSize:11, fontWeight:600, cursor:'pointer', fontFamily:'inherit', transition:'background .15s, transform .1s' }}
-                              onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,.14)'}
-                              onMouseLeave={e=>e.currentTarget.style.background='rgba(255,255,255,.08)'}
-                              onMouseDown={e=>e.currentTarget.style.transform='scale(.98)'}
-                              onMouseUp={e=>e.currentTarget.style.transform='scale(1)'}
-                            >{fuelHoyExp?'▲ Mostrar menos':`▼ Ver ${hidden} más (${todayFuel.length} total)`}</button>
-                          )}
-                        </>
-                      );
-                    })() : fuelItems ? (
-                      <div style={{ fontSize:12, color:'rgba(255,255,255,.5)', textAlign:'center', padding:'8px 0' }}>Sin descuentos activos para hoy · {dayName}</div>
-                    ) : null}
-                  </div>
-
                   {/* ─── BUSCADOR ─── */}
                   <div style={{ marginBottom:10, position:'relative' }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', pointerEvents:'none' }}>
@@ -5693,71 +5572,6 @@ function App() {
               return (
                 <div className="fade-in">
                   {movilidadModal && <MobVerifyModal item={movilidadModal} />}
-
-                  {/* ─── SECCIÓN HOY ─── */}
-                  <div style={{ background:'linear-gradient(135deg,#1e3a8a,#1d4ed8)', borderRadius:8, padding:'14px 16px', marginBottom:18 }}>
-                    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10, flexWrap:'wrap', gap:6 }}>
-                      <div>
-                        <div style={{ fontSize:9, color:'rgba(255,255,255,.5)', fontWeight:700, letterSpacing:'.12em', textTransform:'uppercase' }}>Activas hoy mismo</div>
-                        <div style={{ display:'flex', alignItems:'baseline', gap:8, marginTop:1 }}>
-                          <span style={{ fontSize:16, fontWeight:900, color:'#fff' }}>HOY — {dateStr}</span>
-                          <span style={{ fontSize:10, color:'rgba(255,255,255,.5)' }}>{dayName} · {todayItems.length} activas</span>
-                        </div>
-                      </div>
-                      {movilidadLoading && (
-                        <div style={{ display:'flex', gap:4 }}>
-                          {[0,1,2].map(i=><div key={i} style={{ width:4,height:4,borderRadius:'50%',background:'rgba(255,255,255,.4)',animation:`blink 1.2s ease-in-out ${i*.2}s infinite` }}/>)}
-                        </div>
-                      )}
-                    </div>
-                    {todayItems.length > 0 ? (() => {
-                      const HOY_LIMIT  = 8;
-                      const hoyVisible = (movilidadHoyExp || movilidadHoyCollapsing)
-                        ? todayItems : todayItems.slice(0, HOY_LIMIT);
-                      const hidden = todayItems.length - HOY_LIMIT;
-                      const toggleMobHoy = () => {
-                        if (movilidadHoyExp) {
-                          setMovilidadHoyCollapsing(true);
-                          setTimeout(() => { setMovilidadHoyExp(false); setMovilidadHoyCollapsing(false); }, 220);
-                        } else {
-                          setMovilidadHoyExp(true);
-                        }
-                      };
-                      return (
-                        <>
-                          <div style={{ display:'grid', gridTemplateColumns: isMobile?'repeat(2,1fr)':'repeat(auto-fill,minmax(160px,1fr))', gap:6 }}>
-                            {hoyVisible.map((p, idx) => {
-                              const isNew      = movilidadHoyExp && !movilidadHoyCollapsing && idx >= HOY_LIMIT;
-                              const isLeaving  = movilidadHoyCollapsing && idx >= HOY_LIMIT;
-                              const delay      = `${(idx - HOY_LIMIT) * 28}ms`;
-                              return (
-                                <div key={p.id} style={
-                                  isLeaving ? { animation:`slideDownOut2 .18s ease-in both`, animationDelay: delay }
-                                  : isNew    ? { animation:`slideUp .22s ease-out both`,     animationDelay: delay }
-                                  : {}
-                                }>
-                                  <MobHoyCard item={p}/>
-                                </div>
-                              );
-                            })}
-                          </div>
-                          {hidden > 0 && (
-                            <button onClick={toggleMobHoy}
-                              style={{ marginTop:8, width:'100%', padding:'6px 0', background:'rgba(255,255,255,.08)', border:'1px solid rgba(255,255,255,.15)', borderRadius:6, color:'rgba(255,255,255,.75)', fontSize:11, fontWeight:600, cursor:'pointer', fontFamily:'inherit', transition:'background .15s, transform .1s' }}
-                              onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,.14)'}
-                              onMouseLeave={e=>e.currentTarget.style.background='rgba(255,255,255,.08)'}
-                              onMouseDown={e=>e.currentTarget.style.transform='scale(.98)'}
-                              onMouseUp={e=>e.currentTarget.style.transform='scale(1)'}
-                            >
-                              {movilidadHoyExp ? '▲ Mostrar menos' : `▼ Ver ${hidden} más (${todayItems.length} total)`}
-                            </button>
-                          )}
-                        </>
-                      );
-                    })() : movilidadItems ? (
-                      <div style={{ fontSize:12, color:'rgba(255,255,255,.5)', textAlign:'center', padding:'8px 0' }}>Sin beneficios activos hoy · {dayName}</div>
-                    ) : null}
-                  </div>
 
                   {/* ─── BUSCADOR ─── */}
                   <div style={{ marginBottom:10, position:'relative' }}>
