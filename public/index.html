@@ -2414,6 +2414,7 @@ function TransporteSectionHeader({ title, count, color, bg }) {
 }
 
 function App() {
+  const [showSplash,  setShowSplash]  = useState(true);
   const [lang,        setLang]        = useState('es');
   const [activeTab,   setActiveTab]   = useState('ars');
   const [filter,      setFilter]      = useState('all');
@@ -2705,6 +2706,113 @@ function App() {
   };
 
   if (initLoading) return <LoadingScreen msg={loadMsg} />;
+
+  if (showSplash) return (
+    <div style={{
+      position:'fixed', inset:0, zIndex:200,
+      background:'var(--bg)',
+      display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+      padding:'24px',
+      fontFamily:'Inter, sans-serif',
+    }}>
+      {/* Fondo decorativo */}
+      <div style={{
+        position:'absolute', inset:0, overflow:'hidden', pointerEvents:'none',
+      }}>
+        <div style={{ position:'absolute', top:-120, right:-120, width:400, height:400, borderRadius:'50%', background:'radial-gradient(circle, #44685c18 0%, transparent 70%)' }} />
+        <div style={{ position:'absolute', bottom:-80, left:-80, width:300, height:300, borderRadius:'50%', background:'radial-gradient(circle, #44685c12 0%, transparent 70%)' }} />
+      </div>
+
+      <div style={{ position:'relative', maxWidth:480, width:'100%' }}>
+
+        {/* Logo */}
+        <div style={{ textAlign:'center', marginBottom:32 }}>
+          <img src="/titulo6.png" alt="SiHayPlata" style={{ height:72, width:'auto' }} />
+        </div>
+
+        {/* Card principal */}
+        <div style={{
+          background:'var(--surface)', borderRadius:16,
+          border:'1px solid var(--border)',
+          boxShadow:'0 24px 64px rgba(0,0,0,.10)',
+          overflow:'hidden',
+        }}>
+
+          {/* Header verde */}
+          <div style={{
+            background:'linear-gradient(135deg, #44685c, #2d4a40)',
+            padding:'28px 28px 24px',
+          }}>
+            <div style={{ fontSize:10, fontWeight:800, color:'rgba(255,255,255,.6)', letterSpacing:'.16em', textTransform:'uppercase', marginBottom:8 }}>
+              Nueva sección disponible
+            </div>
+            <h1 style={{ margin:0, fontSize:28, fontWeight:900, color:'#fff', lineHeight:1.2, letterSpacing:'-.5px' }}>
+              Beneficios
+            </h1>
+            <p style={{ margin:'10px 0 0', fontSize:14, color:'rgba(255,255,255,.75)', lineHeight:1.6 }}>
+              Descubrí dónde te conviene pagar con tu billetera o tarjeta — supermercados, nafta, transporte y más.
+            </p>
+          </div>
+
+          {/* Categorías */}
+          <div style={{ padding:'20px 24px', display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+            {[
+              { icon:'🛒', label:'Supermercados', sub:'Descuentos en Carrefour, Día, Coto y más' },
+              { icon:'⛽', label:'Combustibles',  sub:'YPF, Shell, Axion, Gulf, Puma' },
+              { icon:'🚗', label:'Movilidad',     sub:'Subte, colectivo, peaje y más' },
+              { icon:'🚌', label:'Transporte',    sub:'Beneficios en transporte público' },
+            ].map(cat => (
+              <div key={cat.label} style={{
+                background:'var(--surface-2)', borderRadius:10,
+                border:'1px solid var(--border)',
+                padding:'14px 14px 12px',
+              }}>
+                <div style={{ fontSize:24, marginBottom:6 }}>{cat.icon}</div>
+                <div style={{ fontSize:13, fontWeight:700, color:'var(--txt-1)', lineHeight:1.2 }}>{cat.label}</div>
+                <div style={{ fontSize:11, color:'var(--txt-3)', marginTop:3, lineHeight:1.4 }}>{cat.sub}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Botones */}
+          <div style={{ padding:'0 24px 24px', display:'flex', gap:10 }}>
+            <button
+              onClick={() => { setShowSplash(false); handleTab('beneficios'); }}
+              style={{
+                flex:2, padding:'14px 0', borderRadius:8, cursor:'pointer',
+                fontFamily:'inherit', fontWeight:800, fontSize:15,
+                background:'#44685c', color:'#fff', border:'none',
+                transition:'background .15s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background='#2d4a40'}
+              onMouseLeave={e => e.currentTarget.style.background='#44685c'}
+            >
+              Acceder a Beneficios
+            </button>
+            <button
+              onClick={() => setShowSplash(false)}
+              style={{
+                flex:1, padding:'14px 0', borderRadius:8, cursor:'pointer',
+                fontFamily:'inherit', fontWeight:600, fontSize:14,
+                background:'none', color:'var(--txt-3)',
+                border:'1px solid var(--border)',
+                transition:'border-color .15s, color .15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor='#44685c'; e.currentTarget.style.color='#44685c'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor='var(--border)'; e.currentTarget.style.color='var(--txt-3)'; }}
+            >
+              Omitir
+            </button>
+          </div>
+        </div>
+
+        {/* Pie */}
+        <p style={{ textAlign:'center', fontSize:11, color:'var(--txt-3)', marginTop:16 }}>
+          Podés acceder a Beneficios en cualquier momento desde el menú de navegación.
+        </p>
+      </div>
+    </div>
+  );
 
   const BENEFICIOS_KEYS = ['supermercados','movilidad','combustibles','transporte'];
 
