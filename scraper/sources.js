@@ -11,9 +11,8 @@
    FUENTE 3: Recálculo BADLAR — fallback matemático desde spreads previos
 ═══════════════════════════════════════════════════════════════════ */
 
-const puppeteer = require('puppeteer');
-const fs        = require('fs');
-const path      = require('path');
+const fs   = require('fs');
+const path = require('path');
 
 const ARS_FILE = path.join(__dirname, '..', 'data', 'ars_rates.json');
 
@@ -86,6 +85,7 @@ async function _scrapeOneApp(page, { app, url, waitMs }) {
 }
 
 async function sourcePuppeteer() {
+  const { default: puppeteer } = await import('puppeteer');
   console.log('[source:puppeteer] Iniciando navegador headless…');
   const browser = await puppeteer.launch({
     headless: true,

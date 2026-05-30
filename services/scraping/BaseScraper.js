@@ -1,8 +1,7 @@
 'use strict';
 
-const puppeteer = require('puppeteer');
-const path      = require('path');
-const fs        = require('fs');
+const path = require('path');
+const fs   = require('fs');
 
 const SCREENSHOT_DIR = path.join(__dirname, '../../logs/screenshots');
 if (!fs.existsSync(SCREENSHOT_DIR)) fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
@@ -20,6 +19,7 @@ class BaseScraper {
   }
 
   async launch() {
+    const { default: puppeteer } = await import('puppeteer');
     this.browser = await puppeteer.launch({
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
