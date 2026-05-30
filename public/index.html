@@ -2166,6 +2166,20 @@ function SectionBlock({ sec, secItems, isMobile, t, onSimulate, onNavigate }) {
 /* ═══════════════════════════════════════
    MAIN APP
 ═══════════════════════════════════════ */
+function TransporteSectionHeader({ title, count, color, bg }) {
+  return (
+    <div style={{
+      display:'flex', alignItems:'center',
+      padding:'10px 14px', background:bg,
+      borderLeft:`3px solid ${color}`, border:`1px solid ${color}22`,
+      borderRadius:4, marginBottom:12,
+    }}>
+      <span style={{ flex:1, fontWeight:800, fontSize:13, color, letterSpacing:'.04em', textTransform:'uppercase' }}>{title}</span>
+      <span style={{ fontSize:11, fontWeight:700, color:'var(--txt-3)' }}>{count} beneficio{count!==1?'s':''}</span>
+    </div>
+  );
+}
+
 function App() {
   const [lang,        setLang]        = useState('es');
   const [activeTab,   setActiveTab]   = useState('ars');
@@ -5842,17 +5856,6 @@ function App() {
                 ? SECTION_DEFS
                 : SECTION_DEFS.filter(s => s.key === transporteFilter);
 
-              const SectionHeader = ({ title, count, color, bg }) => (
-                <div style={{
-                  display:'flex', alignItems:'center',
-                  padding:'10px 14px', background:bg,
-                  borderLeft:`3px solid ${color}`, border:`1px solid ${color}22`,
-                  borderRadius:4, marginBottom:12,
-                }}>
-                  <span style={{ flex:1, fontWeight:800, fontSize:13, color, letterSpacing:'.04em', textTransform:'uppercase' }}>{title}</span>
-                  <span style={{ fontSize:11, fontWeight:700, color:'var(--txt-3)' }}>{count} beneficio{count!==1?'s':''}</span>
-                </div>
-              );
 
               return (
                 <div className="fade-in">
@@ -5905,7 +5908,7 @@ function App() {
                     if (!cards.length) return null;
                     return (
                       <div key={sec.key} style={{ marginBottom:24 }}>
-                        <SectionHeader title={sec.label} count={cards.length} color={sec.color} bg={sec.bg} />
+                        <TransporteSectionHeader title={sec.label} count={cards.length} color={sec.color} bg={sec.bg} />
                         <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2,1fr)', gap:14 }}>
                           {cards.map(item => (
                             <TransporteCard
