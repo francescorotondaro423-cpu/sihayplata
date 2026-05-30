@@ -4737,39 +4737,43 @@ function App() {
                   {/* Modal de verificación */}
                   {verifyModal && <VerifyModal item={verifyModal} />}
 
-                  {/* ─── CATEGORÍAS + BUSCADOR ─── */}
-                  <div style={{ display:'flex', gap:10, marginBottom:10, flexWrap:'wrap', alignItems:'center' }}>
-                    <div style={{ flex:1, minWidth:200, position:'relative' }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', pointerEvents:'none' }}>
-                        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-                      </svg>
-                      <input type="text" placeholder="Buscar billetera, banco, supermercado…" value={promotionsSearch} onChange={e => setPromotionsSearch(e.target.value)}
-                        style={{ width:'100%', paddingLeft:32, paddingRight:10, paddingTop:8, paddingBottom:8, background:'var(--input-bg)', border:'1px solid var(--border)', borderRadius:4, fontFamily:'inherit', fontSize:12, color:'var(--txt-1)', outline:'none', boxSizing:'border-box' }}
-                      />
-                    </div>
+                  {/* ─── BUSCADOR ─── */}
+                  <div style={{ position:'relative', marginBottom:14 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--txt-3)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', pointerEvents:'none' }}>
+                      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                    </svg>
+                    <input type="text" placeholder="Buscar billetera, banco, supermercado…" value={promotionsSearch} onChange={e => setPromotionsSearch(e.target.value)}
+                      style={{ width:'100%', paddingLeft:42, paddingRight:14, paddingTop:12, paddingBottom:12, background:'var(--input-bg)', border:'1px solid var(--border)', borderRadius:6, fontFamily:'inherit', fontSize:15, color:'var(--txt-1)', outline:'none', boxSizing:'border-box' }}
+                    />
                   </div>
 
-                  <div className="nav-scroll" style={{ display:'flex', gap:0, marginBottom:16, borderBottom:'1px solid var(--border)' }}>
-                    {CATS.map(c => (
-                      <button key={c.key} onClick={() => { setPromotionsCategory(c.key); setPromotionsSearch(''); }} style={{
-                        padding:'8px 14px', cursor:'pointer', fontFamily:'inherit',
-                        fontSize:12, fontWeight: promotionsCategory===c.key ? 700 : 500,
-                        background:'none', border:'none',
-                        borderBottom:`2px solid ${promotionsCategory===c.key ? c.color : 'transparent'}`,
-                        marginBottom:-1, color: promotionsCategory===c.key ? c.color : 'var(--txt-2)',
-                        whiteSpace:'nowrap', transition:'color .15s',
-                      }}
-                        onMouseEnter={e => { if(promotionsCategory!==c.key) e.currentTarget.style.color='var(--txt-1)'; }}
-                        onMouseLeave={e => { if(promotionsCategory!==c.key) e.currentTarget.style.color='var(--txt-2)'; }}
-                      >
-                        {c.label}
-                        {c.key!=='all' && promotionsItems && (
-                          <span style={{ marginLeft:5, fontSize:10, color: promotionsCategory===c.key ? c.color : 'var(--txt-3)', fontWeight:400 }}>
-                            {allItems.filter(i=>i.sourceCategory===c.key).length}
-                          </span>
-                        )}
-                      </button>
-                    ))}
+                  {/* ─── FILTROS ─── */}
+                  <div className="nav-scroll" style={{ display:'flex', gap:0, marginBottom:20, borderBottom:'1px solid var(--border)' }}>
+                    {CATS.map(c => {
+                      const on  = promotionsCategory === c.key;
+                      const cnt = c.key !== 'all' && promotionsItems ? allItems.filter(i=>i.sourceCategory===c.key).length : null;
+                      return (
+                        <button key={c.key} onClick={() => { setPromotionsCategory(c.key); setPromotionsSearch(''); }} style={{
+                          padding:'11px 18px', cursor:'pointer', fontFamily:'inherit',
+                          fontSize:13, fontWeight: on ? 700 : 500,
+                          background:'none', border:'none',
+                          borderBottom:`2px solid ${on ? '#44685c' : 'transparent'}`,
+                          marginBottom:-1, color: on ? '#44685c' : 'var(--txt-2)',
+                          whiteSpace:'nowrap', transition:'color .15s',
+                          display:'flex', alignItems:'center', gap:6,
+                        }}
+                          onMouseEnter={e => { if(!on) e.currentTarget.style.color='var(--txt-1)'; }}
+                          onMouseLeave={e => { if(!on) e.currentTarget.style.color='var(--txt-2)'; }}
+                        >
+                          {c.label}
+                          {cnt !== null && (
+                            <span style={{ fontSize:11, fontWeight:600, padding:'1px 7px', borderRadius:10, background: on ? '#44685c22' : 'var(--surface-2)', color: on ? '#44685c' : 'var(--txt-3)' }}>
+                              {cnt}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
 
                   {/* Loading */}
@@ -5199,32 +5203,34 @@ function App() {
                   {fuelModal && <FuelVerifyModal item={fuelModal}/>}
 
                   {/* ─── BUSCADOR ─── */}
-                  <div style={{ marginBottom:10, position:'relative' }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', pointerEvents:'none' }}>
+                  <div style={{ position:'relative', marginBottom:14 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--txt-3)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', pointerEvents:'none' }}>
                       <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
                     </svg>
                     <input type="text" placeholder="Buscar billetera, banco, estación, tipo de combustible…"
                       value={fuelSearch} onChange={e=>setFuelSearch(e.target.value)}
-                      style={{ width:'100%', paddingLeft:32, paddingRight:10, paddingTop:8, paddingBottom:8, background:'var(--input-bg)', border:'1px solid var(--border)', borderRadius:4, fontFamily:'inherit', fontSize:12, color:'var(--txt-1)', outline:'none', boxSizing:'border-box' }}
+                      style={{ width:'100%', paddingLeft:42, paddingRight:14, paddingTop:12, paddingBottom:12, background:'var(--input-bg)', border:'1px solid var(--border)', borderRadius:6, fontFamily:'inherit', fontSize:15, color:'var(--txt-1)', outline:'none', boxSizing:'border-box' }}
                     />
                   </div>
 
-                  {/* ─── TABS ─── */}
-                  <div className="nav-scroll" style={{ display:'flex', gap:0, marginBottom:16, borderBottom:'1px solid var(--border)' }}>
-                    {FUEL_CATS.map(c=>(
-                      <button key={c.key} onClick={()=>{setFuelCat(c.key);setFuelSearch('');}}
-                        style={{ padding:'8px 14px', cursor:'pointer', fontFamily:'inherit', fontSize:12, fontWeight:fuelCat===c.key?700:500, background:'none', border:'none', borderBottom:`2px solid ${fuelCat===c.key?c.color:'transparent'}`, marginBottom:-1, color:fuelCat===c.key?c.color:'var(--txt-2)', whiteSpace:'nowrap', transition:'color .15s' }}
-                        onMouseEnter={e=>{if(fuelCat!==c.key)e.currentTarget.style.color='var(--txt-1)';}}
-                        onMouseLeave={e=>{if(fuelCat!==c.key)e.currentTarget.style.color='var(--txt-2)';}}
-                      >
-                        {c.label}
-                        {!['all','bancos','billeteras','puntos'].includes(c.key) && fuelItems && (
-                          <span style={{ marginLeft:5, fontSize:10, color:fuelCat===c.key?c.color:'var(--txt-3)', fontWeight:400 }}>
-                            {allFuel.filter(i=>i.category===c.key).length}
-                          </span>
-                        )}
-                      </button>
-                    ))}
+                  {/* ─── FILTROS ─── */}
+                  <div className="nav-scroll" style={{ display:'flex', gap:0, marginBottom:20, borderBottom:'1px solid var(--border)' }}>
+                    {FUEL_CATS.map(c=>{
+                      const on  = fuelCat === c.key;
+                      const cnt = !['all','bancos','billeteras','puntos'].includes(c.key) && fuelItems ? allFuel.filter(i=>i.category===c.key).length : null;
+                      return (
+                        <button key={c.key} onClick={()=>{setFuelCat(c.key);setFuelSearch('');}}
+                          style={{ padding:'11px 18px', cursor:'pointer', fontFamily:'inherit', fontSize:13, fontWeight:on?700:500, background:'none', border:'none', borderBottom:`2px solid ${on?'#44685c':'transparent'}`, marginBottom:-1, color:on?'#44685c':'var(--txt-2)', whiteSpace:'nowrap', transition:'color .15s', display:'flex', alignItems:'center', gap:6 }}
+                          onMouseEnter={e=>{if(!on)e.currentTarget.style.color='var(--txt-1)';}}
+                          onMouseLeave={e=>{if(!on)e.currentTarget.style.color='var(--txt-2)';}}
+                        >
+                          {c.label}
+                          {cnt !== null && (
+                            <span style={{ fontSize:11, fontWeight:600, padding:'1px 7px', borderRadius:10, background:on?'#44685c22':'var(--surface-2)', color:on?'#44685c':'var(--txt-3)' }}>{cnt}</span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
 
                   {/* ─── LOADING ─── */}
@@ -5576,32 +5582,34 @@ function App() {
                   {movilidadModal && <MobVerifyModal item={movilidadModal} />}
 
                   {/* ─── BUSCADOR ─── */}
-                  <div style={{ marginBottom:10, position:'relative' }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', pointerEvents:'none' }}>
+                  <div style={{ position:'relative', marginBottom:14 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--txt-3)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', pointerEvents:'none' }}>
                       <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
                     </svg>
                     <input type="text" placeholder="Buscar billetera, banco, transporte, línea…"
                       value={movilidadSearch} onChange={e=>setMovilidadSearch(e.target.value)}
-                      style={{ width:'100%', paddingLeft:32, paddingRight:10, paddingTop:8, paddingBottom:8, background:'var(--input-bg)', border:'1px solid var(--border)', borderRadius:4, fontFamily:'inherit', fontSize:12, color:'var(--txt-1)', outline:'none', boxSizing:'border-box' }}
+                      style={{ width:'100%', paddingLeft:42, paddingRight:14, paddingTop:12, paddingBottom:12, background:'var(--input-bg)', border:'1px solid var(--border)', borderRadius:6, fontFamily:'inherit', fontSize:15, color:'var(--txt-1)', outline:'none', boxSizing:'border-box' }}
                     />
                   </div>
 
-                  {/* ─── TABS DE CATEGORÍA ─── */}
-                  <div className="nav-scroll" style={{ display:'flex', gap:0, marginBottom:16, borderBottom:'1px solid var(--border)' }}>
-                    {MOB_CATS.map(c=>(
-                      <button key={c.key} onClick={()=>{setMovilidadCat(c.key);setMovilidadSearch('');}}
-                        style={{ padding:'8px 14px', cursor:'pointer', fontFamily:'inherit', fontSize:12, fontWeight:movilidadCat===c.key?700:500, background:'none', border:'none', borderBottom:`2px solid ${movilidadCat===c.key?c.color:'transparent'}`, marginBottom:-1, color:movilidadCat===c.key?c.color:'var(--txt-2)', whiteSpace:'nowrap', transition:'color .15s' }}
-                        onMouseEnter={e=>{if(movilidadCat!==c.key)e.currentTarget.style.color='var(--txt-1)';}}
-                        onMouseLeave={e=>{if(movilidadCat!==c.key)e.currentTarget.style.color='var(--txt-2)';}}
-                      >
-                        {c.label}
-                        {c.key!=='all' && movilidadItems && (
-                          <span style={{ marginLeft:5, fontSize:10, color:movilidadCat===c.key?c.color:'var(--txt-3)', fontWeight:400 }}>
-                            {allItems.filter(i=>i.category===c.key).length}
-                          </span>
-                        )}
-                      </button>
-                    ))}
+                  {/* ─── FILTROS ─── */}
+                  <div className="nav-scroll" style={{ display:'flex', gap:0, marginBottom:20, borderBottom:'1px solid var(--border)' }}>
+                    {MOB_CATS.map(c=>{
+                      const on  = movilidadCat === c.key;
+                      const cnt = c.key !== 'all' && movilidadItems ? allItems.filter(i=>i.category===c.key).length : null;
+                      return (
+                        <button key={c.key} onClick={()=>{setMovilidadCat(c.key);setMovilidadSearch('');}}
+                          style={{ padding:'11px 18px', cursor:'pointer', fontFamily:'inherit', fontSize:13, fontWeight:on?700:500, background:'none', border:'none', borderBottom:`2px solid ${on?'#44685c':'transparent'}`, marginBottom:-1, color:on?'#44685c':'var(--txt-2)', whiteSpace:'nowrap', transition:'color .15s', display:'flex', alignItems:'center', gap:6 }}
+                          onMouseEnter={e=>{if(!on)e.currentTarget.style.color='var(--txt-1)';}}
+                          onMouseLeave={e=>{if(!on)e.currentTarget.style.color='var(--txt-2)';}}
+                        >
+                          {c.label}
+                          {cnt !== null && (
+                            <span style={{ fontSize:11, fontWeight:600, padding:'1px 7px', borderRadius:10, background:on?'#44685c22':'var(--surface-2)', color:on?'#44685c':'var(--txt-3)' }}>{cnt}</span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
 
                   {/* ─── LOADING ─── */}
