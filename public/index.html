@@ -5762,6 +5762,113 @@ function App() {
         </div>
       </div>
 
+      {/* ═══════════════════════════════════════════════════
+          FOOTER
+      ═══════════════════════════════════════════════════ */}
+      <footer style={{
+        borderTop: '1px solid var(--border)',
+        marginTop: 32,
+        paddingTop: 28,
+        paddingBottom: 32,
+        background: 'var(--surface)',
+      }}>
+        <div style={{ maxWidth: 1300, margin: '0 auto', padding: '0 20px' }}>
+
+          {/* ── Links temáticos ── */}
+          <nav style={{
+            display: 'flex', flexWrap: 'wrap', justifyContent: 'center',
+            gap: '6px 0', marginBottom: 20,
+          }}>
+            {[
+              'Invertir en Pesos','Plazo Fijo Argentina','FCI Money Market',
+              'Dólar Blue Hoy','Dólar MEP','Billeteras Virtuales',
+              'Tasas del BCRA','Rendimientos Financieros','Comparar Tasas',
+              'Cotizaciones del Dólar','Beneficios Supermercados','Política de Privacidad',
+            ].map((lbl, i, arr) => (
+              <span key={lbl} style={{ display:'flex', alignItems:'center' }}>
+                <span style={{
+                  fontSize: 12, color: 'var(--txt-2)', cursor: 'pointer',
+                  padding: '4px 12px',
+                  transition: 'color .15s',
+                }}
+                  onMouseEnter={e => e.currentTarget.style.color='#44685c'}
+                  onMouseLeave={e => e.currentTarget.style.color='var(--txt-2)'}
+                >{lbl}</span>
+                {i < arr.length - 1 && (
+                  <span style={{ color: 'var(--border)', fontSize: 14, userSelect: 'none' }}>|</span>
+                )}
+              </span>
+            ))}
+          </nav>
+
+          {/* ── Caja regulatoria / fuente de datos ── */}
+          <div style={{
+            border: '1px solid var(--border)', borderRadius: 4,
+            display: 'flex', flexWrap: 'wrap', alignItems: 'stretch',
+            overflow: 'hidden', marginBottom: 20,
+          }}>
+            {[
+              { label: 'Fuente de datos oficial', value: 'BCRA API v4.0', sub: 'Estadísticas Monetarias' },
+              { label: 'Indicador de referencia',  value: 'BADLAR',        sub: 'PF entidades financieras privadas' },
+              { label: 'Organismo regulador',      value: 'bcra.gob.ar',   sub: 'Banco Central de la República Argentina' },
+            ].map((item, i) => (
+              <div key={item.label} style={{
+                flex: '1 1 180px', textAlign: 'center',
+                padding: '16px 20px',
+                borderRight: i < 2 ? '1px solid var(--border)' : 'none',
+              }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--txt-3)', letterSpacing: '.07em', textTransform: 'uppercase', marginBottom: 4 }}>{item.label}</div>
+                <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--txt-1)', letterSpacing: '-.3px' }}>{item.value}</div>
+                <div style={{ fontSize: 11, color: 'var(--txt-3)', marginTop: 3 }}>{item.sub}</div>
+              </div>
+            ))}
+            <div style={{
+              flex: '0 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '16px 28px', borderLeft: '1px solid var(--border)',
+              gap: 12,
+            }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: '50%',
+                background: 'linear-gradient(135deg,#44685c,#2d4a40)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0,
+              }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 900, color: 'var(--txt-1)', letterSpacing: '-.2px' }}>BCRA</div>
+                <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--txt-3)', letterSpacing: '.06em', textTransform: 'uppercase', lineHeight: 1.4 }}>Banco Central<br/>Rep. Argentina</div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Legal disclaimer ── */}
+          <p style={{ fontSize: 11, color: 'var(--txt-3)', lineHeight: 1.75, marginBottom: 20, textAlign: 'justify' }}>
+            <strong style={{ color: 'var(--txt-2)' }}>SiHayPlata.com</strong> es un sitio meramente informativo y comparativo. No brinda asesoramiento financiero, recomendación de inversión ni invitación a operar. Las tasas y rendimientos publicados son referenciales y pueden cambiar sin previo aviso; corresponde verificarlos directamente en la plataforma oficial de cada entidad antes de tomar decisiones. Los datos de BADLAR y estadísticas monetarias son provistos por la API pública del Banco Central de la República Argentina (BCRA v4.0). Los spreads de cada producto son estimados o informados por las propias entidades y pueden diferir de las condiciones reales vigentes. Los titulares de este sitio no se responsabilizan por inexactitudes, cambios, ni por los eventuales daños patrimoniales que pudieran resultar del uso de la información aquí publicada. Las cotizaciones del dólar son provistas por fuentes de acceso público. Las promociones de supermercados, movilidad y combustibles son referenciales y sujetas a los términos y condiciones de cada entidad emisora.
+          </p>
+
+          {/* ── Copyright ── */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, paddingTop: 16, borderTop: '1px solid var(--border-lt)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <img src="/favicon.png" alt="SiHayPlata" style={{ height: 20, width: 'auto', opacity: .7 }} />
+              <span style={{ fontSize: 12, color: 'var(--txt-3)' }}>
+                © {new Date().getFullYear()} <strong style={{ color: 'var(--txt-2)' }}>SiHayPlata.com</strong> — Todos los derechos reservados
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: 16 }}>
+              {['BCRA API v4.0', 'dolarapi.com', 'La Nación RSS'].map(src => (
+                <span key={src} style={{ fontSize: 10, color: 'var(--txt-3)', fontWeight: 600, letterSpacing: '.04em' }}>
+                  {src}
+                </span>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      </footer>
+
       {/* MODAL */}
       {simItem && (
         <SimModal item={simItem} currency={currency} onClose={() => setSimItem(null)} t={t} />
