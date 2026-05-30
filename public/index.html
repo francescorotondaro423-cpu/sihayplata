@@ -2335,6 +2335,7 @@ function App() {
   const [transporteItems,   setTransporteItems]   = useState(null);
   const [transporteLoading, setTransporteLoading] = useState(false);
   const [transporteFilter,  setTransporteFilter]  = useState('all');
+  const [transporteSearch,  setTransporteSearch]  = useState('');
   const [transporteReported,setTransporteReported]= useState({});
   const [promotionsItems,    setPromotionsItems]    = useState(null);
   const [promotionsLoading,  setPromotionsLoading]  = useState(false);
@@ -4639,14 +4640,14 @@ function App() {
               const normStr = s => (s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
               const normQ   = normStr(promotionsSearch);
 
-              let catItems = promotionsCategory === 'all' ? allItems
-                : allItems.filter(i => i.sourceCategory === promotionsCategory);
-
-              if (promotionsSearch.trim())
-                catItems = catItems.filter(i =>
-                  [i.wallet, i.bank, i.supermarket, ...(i.supermarketList||[]), i.description]
-                    .some(s => normStr(s).includes(normQ))
-                );
+              // Al buscar, ignorar filtro de categoría y mostrar todo
+              let catItems = promotionsSearch.trim()
+                ? allItems.filter(i =>
+                    [i.wallet, i.bank, i.supermarket, ...(i.supermarketList||[]), i.description, i.sourceCategory]
+                      .some(s => normStr(s).includes(normQ))
+                  )
+                : (promotionsCategory === 'all' ? allItems
+                    : allItems.filter(i => i.sourceCategory === promotionsCategory));
 
               /* ── Inline sub-components ── */
               const TrustBadge = ({ level }) => {
@@ -5021,23 +5022,25 @@ function App() {
 
               /* ─── filtro categoría ─── */
               const MAIN_STATIONS = ['YPF','Shell','Axion','Puma'];
-              let catItems = (() => {
-                switch (fuelCat) {
-                  case 'ypf':       return allFuel.filter(i => i.category === 'ypf');
-                  case 'shell':     return allFuel.filter(i => i.category === 'shell');
-                  case 'axion':     return allFuel.filter(i => i.category === 'axion');
-                  case 'puma':      return allFuel.filter(i => i.category === 'puma');
-                  case 'gulf':      return allFuel.filter(i => i.category === 'gulf');
-                  case 'bancos':    return allFuel.filter(i => i.bank && i.benefitType !== 'LOYALTY');
-                  case 'billeteras':return allFuel.filter(i => !i.bank && i.benefitType !== 'LOYALTY');
-                  case 'puntos':    return allFuel.filter(i => i.benefitType === 'LOYALTY');
-                  default:          return allFuel;
-                }
-              })();
-              if (fuelSearch.trim()) catItems = catItems.filter(i =>
-                [i.station, i.wallet, i.bank, i.retailApp, i.loyaltyProgram, i.description, ...(i.fuelType||[])]
-                  .some(s => normFuel(s).includes(normFuelQ))
-              );
+              // Al buscar, ignora el filtro de estación y busca en todo
+              let catItems = fuelSearch.trim()
+                ? allFuel.filter(i =>
+                    [i.station, i.wallet, i.bank, i.retailApp, i.loyaltyProgram, i.description, i.category, ...(i.fuelType||[])]
+                      .some(s => normFuel(s).includes(normFuelQ))
+                  )
+                : (() => {
+                    switch (fuelCat) {
+                      case 'ypf':       return allFuel.filter(i => i.category === 'ypf');
+                      case 'shell':     return allFuel.filter(i => i.category === 'shell');
+                      case 'axion':     return allFuel.filter(i => i.category === 'axion');
+                      case 'puma':      return allFuel.filter(i => i.category === 'puma');
+                      case 'gulf':      return allFuel.filter(i => i.category === 'gulf');
+                      case 'bancos':    return allFuel.filter(i => i.bank && i.benefitType !== 'LOYALTY');
+                      case 'billeteras':return allFuel.filter(i => !i.bank && i.benefitType !== 'LOYALTY');
+                      case 'puntos':    return allFuel.filter(i => i.benefitType === 'LOYALTY');
+                      default:          return allFuel;
+                    }
+                  })();
 
               /* ─── HOY Card ─── */
               const FuelHoyCard = ({ item }) => {
@@ -5433,14 +5436,13 @@ function App() {
                   return (a.endDate||'9999').localeCompare(b.endDate||'9999');
                 });
 
-              /* ─── filtro de categoría + búsqueda ─── */
-              let catItems = movilidadCat === 'all' ? allItems
-                : allItems.filter(i => i.category === movilidadCat);
-              if (movilidadSearch.trim())
-                catItems = catItems.filter(i =>
-                  [i.wallet, i.bank, i.provider, i.category, i.description, ...(i.lines||[])]
-                    .some(s => normMob(s).includes(normMobQ))
-                );
+              /* ─── filtro de categoría + búsqueda (búsqueda ignora categoría) ─── */
+              let catItems = movilidadSearch.trim()
+                ? allItems.filter(i =>
+                    [i.wallet, i.bank, i.provider, i.category, i.description, ...(i.lines||[])]
+                      .some(s => normMob(s).includes(normMobQ))
+                  )
+                : (movilidadCat === 'all' ? allItems : allItems.filter(i => i.category === movilidadCat));
 
               /* ─── HOY Card ─── */
               const MobHoyCard = ({ item }) => {
@@ -5785,10 +5787,20 @@ function App() {
                 { key:'peaje',     label:'Peaje',     rubros:['autopista','peaje'], color:'#0f766e', bg:'#f0fdf9' },
               ];
 
-              const cardsForSection = sec =>
-                (transporteItems || []).filter(i => sec.rubros.some(r => i.rubros.includes(r)));
+              const normT = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+              const normTQ = normT(transporteSearch);
 
-              const sectionsToShow = transporteFilter === 'all'
+              const cardsForSection = sec => {
+                const base = (transporteItems || []).filter(i => sec.rubros.some(r => i.rubros.includes(r)));
+                if (!transporteSearch.trim()) return base;
+                return base.filter(i =>
+                  [i.entidad, i.subtitulo, i.condicion, ...(i.rubros||[]), ...(i.metodos_pago||[])]
+                    .some(s => normT(s).includes(normTQ))
+                );
+              };
+
+              // Al buscar, mostrar todas las secciones
+              const sectionsToShow = (transporteSearch.trim() || transporteFilter === 'all')
                 ? SECTION_DEFS
                 : SECTION_DEFS.filter(s => s.key === transporteFilter);
 
@@ -5809,24 +5821,42 @@ function App() {
                     ))}
                   </div>
 
-                  {/* Filtro por tipo de transporte */}
-                  <div className="nav-scroll" style={{ display:'flex', gap:0, marginBottom:16, borderBottom:'1px solid var(--border)' }}>
-                    {[{ key:'all', label:'Todos' }, ...SECTION_DEFS].map(f => (
-                      <button key={f.key}
-                        onClick={() => setTransporteFilter(f.key)}
-                        style={{
-                          padding:'8px 16px', cursor:'pointer', fontFamily:'inherit',
-                          fontSize:12, fontWeight: transporteFilter===f.key ? 700 : 500,
+                  {/* ─── BUSCADOR ─── */}
+                  <div style={{ position:'relative', marginBottom:14 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--txt-3)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ position:'absolute', left:14, top:'50%', transform:'translateY(-50%)', pointerEvents:'none' }}>
+                      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                    </svg>
+                    <input type="text" placeholder="Buscar entidad, método de pago, tipo de transporte…"
+                      value={transporteSearch} onChange={e => setTransporteSearch(e.target.value)}
+                      style={{ width:'100%', paddingLeft:42, paddingRight:14, paddingTop:12, paddingBottom:12, background:'var(--input-bg)', border:'1px solid var(--border)', borderRadius:6, fontFamily:'inherit', fontSize:15, color:'var(--txt-1)', outline:'none', boxSizing:'border-box' }}
+                    />
+                  </div>
+
+                  {/* ─── FILTROS ─── */}
+                  <div className="nav-scroll" style={{ display:'flex', gap:0, marginBottom:20, borderBottom:'1px solid var(--border)' }}>
+                    {[{ key:'all', label:'Todos' }, ...SECTION_DEFS].map(f => {
+                      const on  = transporteFilter === f.key;
+                      const cnt = f.key !== 'all' && transporteItems ? (transporteItems || []).filter(i => f.rubros?.some(r => i.rubros.includes(r))).length : null;
+                      return (
+                        <button key={f.key} onClick={() => setTransporteFilter(f.key)} style={{
+                          padding:'11px 18px', cursor:'pointer', fontFamily:'inherit',
+                          fontSize:13, fontWeight: on ? 700 : 500,
                           background:'none', border:'none',
-                          borderBottom:`2px solid ${transporteFilter===f.key ? (f.color||'#44685c') : 'transparent'}`,
-                          marginBottom:-1,
-                          color: transporteFilter===f.key ? (f.color||'#44685c') : 'var(--txt-2)',
+                          borderBottom:`2px solid ${on ? '#44685c' : 'transparent'}`,
+                          marginBottom:-1, color: on ? '#44685c' : 'var(--txt-2)',
                           whiteSpace:'nowrap', transition:'color .15s',
+                          display:'flex', alignItems:'center', gap:6,
                         }}
-                        onMouseEnter={e => { if(transporteFilter!==f.key) e.currentTarget.style.color='var(--txt-1)'; }}
-                        onMouseLeave={e => { if(transporteFilter!==f.key) e.currentTarget.style.color='var(--txt-2)'; }}
-                      >{f.label}</button>
-                    ))}
+                          onMouseEnter={e => { if(!on) e.currentTarget.style.color='var(--txt-1)'; }}
+                          onMouseLeave={e => { if(!on) e.currentTarget.style.color='var(--txt-2)'; }}
+                        >
+                          {f.label}
+                          {cnt !== null && (
+                            <span style={{ fontSize:11, fontWeight:600, padding:'1px 7px', borderRadius:10, background:on?'#44685c22':'var(--surface-2)', color:on?'#44685c':'var(--txt-3)' }}>{cnt}</span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
 
                   {/* Loading */}
