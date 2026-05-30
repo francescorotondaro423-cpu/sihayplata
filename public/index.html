@@ -2298,6 +2298,103 @@ function BeneficiosSidebar({ activeTab, handleTab, promotionsItems, movilidadIte
           </svg>
         </button>
       </div>
+
+      {/* ── Dónde conviene pagar ── */}
+      {(() => {
+        const STATION_LABEL = { ypf:'YPF', shell:'Shell', axion:'Axion', puma:'Puma', gulf:'Gulf' };
+        const STATION_ICON  = { ypf:'⛽', shell:'⛽', axion:'⛽', puma:'⛽', gulf:'⛽' };
+
+        // Mejor beneficio por estación de combustible
+        const byStation = {};
+        (fuelItems || []).forEach(item => {
+          if (!item.station || item.benefitType === 'LOYALTY') return;
+          const pct  = (item.discountPercent || 0) + (item.cashbackPercent || 0);
+          const name = item.wallet || item.bank || '—';
+          const type = item.cashbackPercent > 0 ? 'cashback' : 'descuento';
+          if (!byStation[item.station] || pct > byStation[item.station].pct)
+            byStation[item.station] = { pct, name, type };
+        });
+
+        // Mejor beneficio por supermercado
+        const bySuper = {};
+        (promotionsItems || []).forEach(item => {
+          const markets = item.supermarketList?.length ? item.supermarketList : (item.supermarket ? [item.supermarket] : []);
+          const pct  = (item.discountPercent || 0) + (item.cashbackPercent || 0);
+          const name = item.wallet || item.bank || '—';
+          const type = item.cashbackPercent > 0 ? 'cashback' : 'descuento';
+          markets.forEach(m => {
+            if (!bySuper[m] || pct > bySuper[m].pct) bySuper[m] = { pct, name, type };
+          });
+        });
+
+        const fuelRows  = Object.entries(byStation).sort((a,b) => b[1].pct - a[1].pct).slice(0, 5);
+        const superRows = Object.entries(bySuper).sort((a,b) => b[1].pct - a[1].pct).slice(0, 5);
+
+        if (!fuelRows.length && !superRows.length) return null;
+
+        const Row = ({ icon, place, name, pct, type, onClick }) => (
+          <button onClick={onClick} style={{
+            width:'100%', display:'flex', alignItems:'center', gap:10,
+            padding:'10px 14px', background:'none', border:'none',
+            borderBottom:'1px solid var(--border-lt)', cursor:'pointer',
+            fontFamily:'inherit', textAlign:'left', transition:'background .12s',
+          }}
+            onMouseEnter={e => e.currentTarget.style.background='var(--hover-bg)'}
+            onMouseLeave={e => e.currentTarget.style.background='none'}
+          >
+            <span style={{ fontSize:16, flexShrink:0 }}>{icon}</span>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:13, fontWeight:700, color:'var(--txt-1)', lineHeight:1.2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{place}</div>
+              <div style={{ fontSize:11, color:'var(--txt-3)', marginTop:2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{name}</div>
+            </div>
+            <div style={{ flexShrink:0, textAlign:'right' }}>
+              <div style={{ fontSize:14, fontWeight:900, color:'#44685c', lineHeight:1 }}>{pct}%</div>
+              <div style={{ fontSize:9, color:'var(--txt-3)', marginTop:2, textTransform:'uppercase', letterSpacing:'.04em' }}>{type}</div>
+            </div>
+          </button>
+        );
+
+        return (
+          <div style={{ marginTop:12, background:'var(--surface)', border:'1px solid var(--border)', borderRadius:4, overflow:'hidden' }}>
+            <div style={{ padding:'12px 14px', borderBottom:'2px solid #44685c', fontSize:13, fontWeight:700, color:'var(--txt-1)' }}>
+              Dónde conviene pagar
+            </div>
+
+            {fuelRows.length > 0 && (
+              <>
+                <div style={{ padding:'8px 14px 4px', fontSize:9, fontWeight:800, color:'var(--txt-3)', letterSpacing:'.1em', textTransform:'uppercase', background:'var(--surface-2)', borderBottom:'1px solid var(--border-lt)' }}>Combustibles</div>
+                {fuelRows.map(([station, { pct, name, type }]) => (
+                  <Row key={station}
+                    icon={STATION_ICON[station] || '⛽'}
+                    place={STATION_LABEL[station] || station}
+                    name={name} pct={pct} type={type}
+                    onClick={() => handleTab('combustibles')}
+                  />
+                ))}
+              </>
+            )}
+
+            {superRows.length > 0 && (
+              <>
+                <div style={{ padding:'8px 14px 4px', fontSize:9, fontWeight:800, color:'var(--txt-3)', letterSpacing:'.1em', textTransform:'uppercase', background:'var(--surface-2)', borderBottom:'1px solid var(--border-lt)' }}>Supermercados</div>
+                {superRows.map(([market, { pct, name, type }]) => (
+                  <Row key={market}
+                    icon='🛒'
+                    place={market} name={name} pct={pct} type={type}
+                    onClick={() => handleTab('supermercados')}
+                  />
+                ))}
+              </>
+            )}
+
+            {(!fuelItems || !promotionsItems) && (
+              <div style={{ padding:'14px', fontSize:12, color:'var(--txt-3)', textAlign:'center' }}>
+                Visitá Combustibles y Supermercados para ver el mapa completo
+              </div>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 }
