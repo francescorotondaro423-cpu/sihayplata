@@ -157,11 +157,42 @@
     /* ── table scroll ── */
     .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
+    /* ── base overflow prevention ── */
+    html, body { overflow-x: hidden; max-width: 100%; }
+
+    /* ── fluid page wrapper ── */
+    .page-wrap { padding-left: clamp(12px, 3vw, 24px); padding-right: clamp(12px, 3vw, 24px); }
+
+    /* ── historial grid (app detail view) ── */
+    .grid-hist { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 24px; align-items: start; }
+
+    /* ── stats grids (auto-responsive) ── */
+    .stats-5 { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 6px; }
+    .stats-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px; }
+
     /* ── responsive ── */
     @media (max-width: 767px) {
       .page-grid { grid-template-columns: 1fr !important; }
       .hide-mobile { display: none !important; }
       .blue-card-mobile { order: -1; }
+      .grid-hist { grid-template-columns: 1fr; gap: 16px; }
+    }
+
+    /* Tablet: 2 columnas (oculta col izquierda Dólar Blue) */
+    @media (min-width: 768px) and (max-width: 1099px) {
+      .page-grid { grid-template-columns: 1fr 240px; gap: 16px; }
+      .page-grid > *:first-child { display: none; }
+      .grid-hist { grid-template-columns: 1fr; }
+    }
+
+    /* Desktop grande */
+    @media (min-width: 1440px) {
+      .page-grid { grid-template-columns: 260px 1fr 300px; gap: 28px; }
+    }
+
+    /* UltraWide: centrado con máximo aprovechable */
+    @media (min-width: 1921px) {
+      .page-grid { grid-template-columns: 280px 1fr 320px; gap: 32px; }
     }
   </style>
 </head>
@@ -1130,7 +1161,7 @@ function HistorialView({ appId, onBack, arsData, t }) {
 
       {/* Gráfico TNA */}
       {!loading && !error && data.length > 0 && (
-        <div style={{ display:'grid', gridTemplateColumns:'2fr 1fr', gap:24, marginBottom:24, alignItems:'start' }}>
+        <div className="grid-hist">
 
           {/* Tarjeta TNA */}
           <div style={cardBase}>
@@ -1223,7 +1254,7 @@ function HistorialView({ appId, onBack, arsData, t }) {
             {/* Stats del período */}
             {hasTnas && (
               <div style={{ marginBottom:8 }}>
-                <div style={{ display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:12, marginBottom:6 }}>
+                <div className="stats-5">
                   {[
                     { label:'TNA actual',      val:`${(infoItem.tna ?? tnas[tnas.length-1]).toFixed(1)}%`, sub:'BADLAR + spread hoy', color:'#44685c' },
                     { label:'Máxima período',  val:`${maxTNA.toFixed(1)}%`,   sub:fmtDate(maxDate),         color:'#16a34a' },
@@ -5618,7 +5649,7 @@ function App() {
               return (
                 <div className="fade-in">
                   {/* Stats rápidas */}
-                  <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12, marginBottom:16 }}>
+                  <div className="stats-3">
                     {[
                       { label:'Beneficios activos',        val: transporteItems ? transporteItems.length : '—',                                        color:'#44685c' },
                       { label:'100% reintegro / cashback', val: transporteItems ? transporteItems.filter(i=>i.porcentaje_max===100).length : '—',      color:'#16a34a' },
