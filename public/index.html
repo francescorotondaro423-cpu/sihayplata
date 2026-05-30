@@ -2759,51 +2759,84 @@ function App() {
           <div style={{ position:'absolute', bottom:'-6%', right:'30%', width:'28vw', height:'28vw', borderRadius:'50%', background:'radial-gradient(circle, #44685c09 0%, transparent 70%)' }} />
         </div>
 
-        {/* ── Persona feliz (SVG) ── */}
+        {/* ── Persona feliz de busto (SVG) ── */}
         <div className="splash-person" style={{
-          position:'absolute', right:0, bottom:0,
-          width:'clamp(260px,38vw,520px)', height:'clamp(320px,55vh,640px)',
+          position:'absolute', right:'-4%', bottom:0,
+          width:'clamp(320px,46vw,680px)',
           pointerEvents:'none', userSelect:'none',
         }}>
-          <svg viewBox="0 0 320 520" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width:'100%', height:'100%' }}>
-            {/* Sombra suave */}
-            <ellipse cx="160" cy="510" rx="80" ry="10" fill="#44685c" fillOpacity=".08"/>
-            {/* Piernas */}
-            <path d="M130 370 Q118 430 110 500" stroke="#44685c" strokeWidth="22" strokeLinecap="round"/>
-            <path d="M190 370 Q202 430 210 500" stroke="#44685c" strokeWidth="22" strokeLinecap="round"/>
-            {/* Pies */}
-            <ellipse cx="108" cy="502" rx="22" ry="10" fill="#44685c" fillOpacity=".7"/>
-            <ellipse cx="212" cy="502" rx="22" ry="10" fill="#44685c" fillOpacity=".7"/>
-            {/* Cuerpo */}
-            <rect x="110" y="240" width="100" height="140" rx="28" fill="#44685c"/>
-            {/* Brazo izquierdo — levantado */}
-            <path d="M112 270 Q70 220 42 170" stroke="#44685c" strokeWidth="20" strokeLinecap="round"/>
+          <svg viewBox="0 0 400 500" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width:'100%', height:'100%' }}>
+
+            {/* ── Brazo izquierdo — levantado arriba ── */}
+            <path d="M118 320 Q72 250 34 170" stroke="#44685c" strokeWidth="36" strokeLinecap="round"/>
             {/* Mano izquierda */}
-            <circle cx="38" cy="162" r="18" fill="#44685c"/>
-            {/* Brazo derecho — levantado */}
-            <path d="M208 270 Q250 220 278 170" stroke="#44685c" strokeWidth="20" strokeLinecap="round"/>
+            <circle cx="28" cy="155" r="28" fill="#44685c"/>
+            {/* Dedos izquierda */}
+            <circle cx="10"  cy="135" r="11" fill="#44685c"/>
+            <circle cx="30"  cy="127" r="11" fill="#44685c"/>
+            <circle cx="50"  cy="131" r="10" fill="#44685c"/>
+
+            {/* ── Brazo derecho — levantado arriba ── */}
+            <path d="M282 320 Q328 250 366 170" stroke="#44685c" strokeWidth="36" strokeLinecap="round"/>
             {/* Mano derecha */}
-            <circle cx="282" cy="162" r="18" fill="#44685c"/>
-            {/* Cuello */}
-            <rect x="146" y="210" width="28" height="36" rx="10" fill="#44685c" fillOpacity=".8"/>
-            {/* Cabeza */}
-            <ellipse cx="160" cy="175" rx="52" ry="56" fill="#44685c" fillOpacity=".9"/>
-            {/* Cara */}
-            <ellipse cx="160" cy="178" rx="38" ry="40" fill="#f5feec"/>
-            {/* Ojos */}
-            <ellipse cx="147" cy="170" rx="5" ry="6" fill="#44685c"/>
-            <ellipse cx="173" cy="170" rx="5" ry="6" fill="#44685c"/>
-            {/* Brillo ojos */}
-            <circle cx="149" cy="168" r="2" fill="#fff"/>
-            <circle cx="175" cy="168" r="2" fill="#fff"/>
-            {/* Sonrisa */}
-            <path d="M143 185 Q160 200 177 185" stroke="#44685c" strokeWidth="3.5" strokeLinecap="round" fill="none"/>
-            {/* Estrellas / destellos */}
-            <g opacity=".5">
-              <path d="M30 100 l4 12 l4-12 l-12 4 l12 4z" fill="#44685c"/>
-              <path d="M290 90 l3 9 l3-9 l-9 3 l9 3z" fill="#44685c"/>
-              <path d="M60 50 l2 6 l2-6 l-6 2 l6 2z" fill="#44685c"/>
-              <path d="M268 50 l2 6 l2-6 l-6 2 l6 2z" fill="#44685c"/>
+            <circle cx="372" cy="155" r="28" fill="#44685c"/>
+            {/* Dedos derecha */}
+            <circle cx="390" cy="135" r="11" fill="#44685c"/>
+            <circle cx="370" cy="127" r="11" fill="#44685c"/>
+            <circle cx="350" cy="131" r="10" fill="#44685c"/>
+
+            {/* ── Torso / pecho ── */}
+            <path d="M90 500 Q90 360 118 310 Q145 280 200 275 Q255 280 282 310 Q310 360 310 500Z" fill="#44685c"/>
+
+            {/* ── Hombros ── */}
+            <ellipse cx="105" cy="305" rx="38" ry="26" fill="#44685c"/>
+            <ellipse cx="295" cy="305" rx="38" ry="26" fill="#44685c"/>
+
+            {/* ── Cuello ── */}
+            <path d="M172 255 Q172 230 200 225 Q228 230 228 255 L228 290 Q228 305 200 308 Q172 305 172 290Z" fill="#44685c" fillOpacity=".85"/>
+
+            {/* ── Cabeza ── */}
+            <ellipse cx="200" cy="168" rx="80" ry="86" fill="#44685c" fillOpacity=".92"/>
+
+            {/* ── Cara ── */}
+            <ellipse cx="200" cy="172" rx="60" ry="64" fill="#f0fdf4"/>
+
+            {/* ── Cejas ── */}
+            <path d="M168 148 Q178 143 188 148" stroke="#44685c" strokeWidth="4" strokeLinecap="round" fill="none"/>
+            <path d="M212 148 Q222 143 232 148" stroke="#44685c" strokeWidth="4" strokeLinecap="round" fill="none"/>
+
+            {/* ── Ojos ── */}
+            <ellipse cx="182" cy="165" rx="10" ry="12" fill="#44685c"/>
+            <ellipse cx="218" cy="165" rx="10" ry="12" fill="#44685c"/>
+            {/* Brillo */}
+            <circle cx="186" cy="161" r="4" fill="#fff"/>
+            <circle cx="222" cy="161" r="4" fill="#fff"/>
+            {/* Pestañas */}
+            <path d="M172 160 Q178 155 185 160" stroke="#44685c" strokeWidth="2" strokeLinecap="round" fill="none"/>
+            <path d="M215 160 Q222 155 228 160" stroke="#44685c" strokeWidth="2" strokeLinecap="round" fill="none"/>
+
+            {/* ── Nariz ── */}
+            <path d="M196 178 Q200 186 204 178" stroke="#44685c" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+
+            {/* ── Sonrisa ── */}
+            <path d="M176 196 Q200 218 224 196" stroke="#44685c" strokeWidth="5" strokeLinecap="round" fill="none"/>
+            {/* Cachetes */}
+            <ellipse cx="168" cy="198" rx="12" ry="8" fill="#44685c" fillOpacity=".15"/>
+            <ellipse cx="232" cy="198" rx="12" ry="8" fill="#44685c" fillOpacity=".15"/>
+
+            {/* ── Pelo ── */}
+            <path d="M125 130 Q130 70 200 62 Q270 70 275 130 Q268 98 200 92 Q132 98 125 130Z" fill="#2d4a40"/>
+            <path d="M126 135 Q118 155 122 175 Q128 145 126 135Z" fill="#2d4a40"/>
+            <path d="M274 135 Q282 155 278 175 Q272 145 274 135Z" fill="#2d4a40"/>
+
+            {/* ── Destellos ── */}
+            <g fill="#44685c" opacity=".35">
+              <path d="M42 80  l5 16 l5-16 l-16 5 l16 5z"/>
+              <path d="M355 65 l4 12 l4-12 l-12 4 l12 4z"/>
+              <path d="M78 40  l3  8  l3  -8  l-8  3  l8  3z"/>
+              <path d="M335 42 l3  8  l3  -8  l-8  3  l8  3z"/>
+              <path d="M18 220 l3  8  l3  -8  l-8  3  l8  3z"/>
+              <path d="M385 200 l3 8  l3  -8  l-8  3  l8  3z"/>
             </g>
           </svg>
         </div>
