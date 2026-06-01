@@ -712,6 +712,205 @@ app.get('/api/news', async (req, res) => {
   res.status(502).json({ ok: false, error: 'No se pudo acceder al feed de noticias.' });
 });
 
+/* ═══════════════════════════════════════════════════════════════
+   ADS — Sistema de anuncios con tracking
+═══════════════════════════════════════════════════════════════ */
+const ADS_FILE  = path.join(__dirname, 'data', 'ads_analytics.json');
+
+const ADVERTISEMENTS = [
+  {
+    id: 'cocos',
+    name: 'Cocos Capital',
+    tagline: 'Invertí en acciones, CEDEARs y fondos comunes desde Argentina.',
+    cta: 'Conocer más',
+    destinationUrl: 'https://www.cocos.capital/',
+    // Programa de referidos: https://cocos.capital/referidos
+    // Cuando obtengas tu código, setealo via PUT /api/ads/cocos/refcode
+    affiliateUrlTemplate: 'https://cocos.capital/?ref={code}',
+    refCode: '',
+    route: 'cocos',
+    brandColor: '#2AB187',
+    bg: '#f0fdf8',
+    textColor: '#0d3d2e',
+    active: true,
+    clicks: 0,
+    impressions: 0,
+  },
+  {
+    id: 'balanz',
+    name: 'Balanz',
+    tagline: 'Invertí de forma simple y profesional en el mercado de capitales.',
+    cta: 'Ver plataforma',
+    destinationUrl: 'https://balanz.com/',
+    // Contactar: partnerships@balanz.com — negociar CPA directo
+    affiliateUrlTemplate: 'https://balanz.com/?aff={code}',
+    refCode: '',
+    route: 'balanz',
+    brandColor: '#0052CC',
+    bg: '#eff6ff',
+    textColor: '#003087',
+    active: true,
+    clicks: 0,
+    impressions: 0,
+  },
+  {
+    id: 'iol',
+    name: 'Invertir Online',
+    tagline: 'Acciones, bonos, CEDEARs y fondos. El broker líder de Argentina.',
+    cta: 'Comenzar',
+    destinationUrl: 'https://www.invertironline.com/',
+    // Programa de afiliados: invertironline.com/afiliados
+    affiliateUrlTemplate: 'https://www.invertironline.com/?ref={code}',
+    refCode: '',
+    route: 'iol',
+    brandColor: '#E31837',
+    bg: '#fff5f5',
+    textColor: '#7f1d1d',
+    active: true,
+    clicks: 0,
+    impressions: 0,
+  },
+  {
+    id: 'lemon',
+    name: 'Lemon',
+    tagline: 'Cripto, pesos y rendimientos. Todo desde tu celular.',
+    cta: 'Descubrir',
+    destinationUrl: 'https://lemon.me/',
+    // Programa de referidos en la app → Perfil → Invitar amigos
+    affiliateUrlTemplate: 'https://lemon.me/invite/{code}',
+    refCode: '',
+    route: 'lemon',
+    brandColor: '#F7B500',
+    bg: '#fffbeb',
+    textColor: '#713f12',
+    active: true,
+    clicks: 0,
+    impressions: 0,
+  },
+  {
+    id: 'belo',
+    name: 'Belo',
+    tagline: 'Cobrá, ahorrá e invertí en una sola app.',
+    cta: 'Explorar',
+    destinationUrl: 'https://belo.app/',
+    // Programa de referidos en la app → Referidos
+    affiliateUrlTemplate: 'https://belo.app/?ref={code}',
+    refCode: '',
+    route: 'belo',
+    brandColor: '#7C3AED',
+    bg: '#f5f3ff',
+    textColor: '#4c1d95',
+    active: true,
+    clicks: 0,
+    impressions: 0,
+  },
+];
+
+/* Carga métricas y códigos de afiliado persistidos */
+(function loadAdAnalytics() {
+  try {
+    const raw = JSON.parse(fs.readFileSync(ADS_FILE, 'utf8'));
+    for (const saved of raw) {
+      const ad = ADVERTISEMENTS.find(a => a.id === saved.id);
+      if (ad) {
+        ad.clicks      = saved.clicks      || 0;
+        ad.impressions = saved.impressions || 0;
+        if (saved.refCode) ad.refCode = saved.refCode;
+      }
+    }
+  } catch {}
+})();
+
+function saveAdAnalytics() {
+  try {
+    const payload = ADVERTISEMENTS.map(({ id, clicks, impressions, refCode }) => ({ id, clicks, impressions, refCode }));
+    fs.writeFileSync(ADS_FILE, JSON.stringify(payload, null, 2));
+  } catch {}
+}
+
+/* Construye la URL final con código de afiliado + UTM params */
+function buildRedirectUrl(ad, position) {
+  const utm = `utm_source=sihayplata&utm_medium=banner&utm_campaign=${ad.id}&utm_content=${position}`;
+  let base;
+  if (ad.refCode && ad.affiliateUrlTemplate) {
+    base = ad.affiliateUrlTemplate.replace('{code}', ad.refCode);
+  } else {
+    base = ad.destinationUrl;
+  }
+  const sep = base.includes('?') ? '&' : '?';
+  return `${base}${sep}${utm}`;
+}
+
+const adClickLog = [];
+
+/* GET /go/:route — tracking redirect con UTM + affiliate code */
+app.get('/go/:route', (req, res) => {
+  const ad = ADVERTISEMENTS.find(a => a.route === req.params.route && a.active);
+  if (!ad) return res.status(404).send('Not found');
+  const position = req.query.pos || 'unknown';
+  ad.clicks++;
+  adClickLog.push({
+    ts:       new Date().toISOString(),
+    id:       ad.id,
+    name:     ad.name,
+    position,
+    hasCode:  !!ad.refCode,
+  });
+  saveAdAnalytics();
+  res.redirect(302, buildRedirectUrl(ad, position));
+});
+
+/* GET /api/ads — lista de anuncios activos para el cliente */
+app.get('/api/ads', (_req, res) => {
+  res.json(ADVERTISEMENTS.filter(a => a.active).map(({ id, name, tagline, cta, route, brandColor, bg, textColor }) => ({
+    id, name, tagline, cta, route: `/go/${route}`, brandColor, bg, textColor,
+  })));
+});
+
+/* POST /api/ads/:id/impression — registra impresión */
+app.post('/api/ads/:id/impression', (req, res) => {
+  const ad = ADVERTISEMENTS.find(a => a.id === req.params.id && a.active);
+  if (!ad) return res.status(404).json({ ok: false });
+  ad.impressions++;
+  saveAdAnalytics();
+  res.json({ ok: true });
+});
+
+/* GET /api/ads/metrics — CTR y métricas con estado de afiliado */
+app.get('/api/ads/metrics', (_req, res) => {
+  res.json(ADVERTISEMENTS.map(a => ({
+    id:                a.id,
+    name:              a.name,
+    clicks:            a.clicks,
+    impressions:       a.impressions,
+    ctr:               a.impressions > 0 ? ((a.clicks / a.impressions) * 100).toFixed(2) + '%' : '0.00%',
+    affiliateStatus:   a.refCode ? '✓ activo' : '⚠ sin código',
+    refCode:           a.refCode || null,
+    affiliateTemplate: a.affiliateUrlTemplate,
+    sampleUrl:         a.refCode ? buildRedirectUrl(a, 'preview') : null,
+    log:               adClickLog.filter(e => e.id === a.id).slice(-10),
+  })));
+});
+
+/* PUT /api/ads/:id/refcode — actualizar código de afiliado sin reiniciar */
+app.put('/api/ads/:id/refcode', (req, res) => {
+  const key = req.headers['x-admin-key'] || req.query.key;
+  if (key !== (process.env.ADMIN_KEY || 'finrank-admin-2026'))
+    return res.status(401).json({ ok: false, error: 'No autorizado' });
+  const ad = ADVERTISEMENTS.find(a => a.id === req.params.id);
+  if (!ad) return res.status(404).json({ ok: false, error: 'Anunciante no encontrado' });
+  const { code } = req.body;
+  if (typeof code !== 'string') return res.status(400).json({ ok: false, error: 'Se requiere { code: string }' });
+  ad.refCode = code.trim();
+  saveAdAnalytics();
+  res.json({
+    ok:      true,
+    id:      ad.id,
+    refCode: ad.refCode,
+    url:     ad.refCode ? buildRedirectUrl(ad, 'preview') : null,
+  });
+});
+
 /* GET /* — SPA fallback */
 app.get('*', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

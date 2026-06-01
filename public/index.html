@@ -164,12 +164,12 @@
     @keyframes splashIn    { from{opacity:0} to{opacity:1} }
     @keyframes splashOut   { from{opacity:1} to{opacity:0} }
     @keyframes splashCard  { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:none} }
-    @keyframes personIn    { from{opacity:0;transform:translateX(60px) scale(.92)} to{opacity:1;transform:none} }
-    @keyframes personFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+    @keyframes personIn    { from{opacity:0;transform:translateX(180px)} to{opacity:1;transform:translateX(0)} }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
     .splash-bg      { animation: splashIn  .4s ease-out both; }
     .splash-bg.exit { animation: splashOut .4s ease-in  both; }
     .splash-card    { animation: splashCard .6s cubic-bezier(.22,.68,0,1.2) .1s both; }
-    .splash-person  { animation: personIn .7s cubic-bezier(.22,.68,0,1.2) .25s both, personFloat 3.5s ease-in-out 1s infinite; }
+    .splash-person  { animation: personIn .75s cubic-bezier(.22,.68,0,1.2) .2s both; }
 
     /* P5 — eliminar tap highlight azul/gris en iOS y Android */
     * { -webkit-tap-highlight-color: transparent; }
@@ -364,65 +364,23 @@ async function fetchCotizaciones() {
       try { result[key] = await tFetch(url, 5000); } catch { /* keep prev */ }
     })
   );
+  try {
+    const otras = await tFetch('https://dolarapi.com/v1/cotizaciones', 5000);
+    if (Array.isArray(otras)) {
+      for (const item of otras) {
+        if (item.moneda === 'EUR') result.euro          = item;
+        if (item.moneda === 'BRL') result.real          = item;
+        if (item.moneda === 'UYU') result.pesoUruguayo  = item;
+        if (item.moneda === 'CLP') result.pesoChileno   = item;
+      }
+    }
+  } catch {}
   return result;
 }
 
 /* ═══════════════════════════════════════
    RATES DATA
 ═══════════════════════════════════════ */
-const ARS_PROFILES = [
-  /* ── RENDIMIENTO VARIABLE · FCI ────────────────────────────── */
-  { app:'Cocos Capital',    type:'fci',    section:'variable',    spread: 1.58, promo:false, limit:'Sin Límite',       info:'FCI Renta Mixta T+0' },
-  { app:'IOL',              type:'fci',    section:'variable',    spread: 0.86, promo:false, limit:'Sin Límite',       info:'IOL Cash FCI Money Market T+0' },
-  { app:'Adcap',            type:'fci',    section:'variable',    spread:-2.86, promo:false, limit:'Sin Límite',       info:'Adcap Fondo Dinero T+0 · fusionó con Banza' },
-  { app:'Global66',         type:'fci',    section:'variable',    spread:-2.96, promo:false, limit:'Sin Límite',       info:'FCI Money Market T+0' },
-  { app:'Personal Pay',     type:'fci',    section:'variable',    spread:-3.29, promo:false, limit:'Sin Límite',       info:'FCI MM · requiere cuenta nivel 2+' },
-  { app:'Mercado Pago',     type:'fci',    section:'variable',    spread:-3.37, promo:false, limit:'Sin Límite',       info:'FCI Mercado Fondo T+0' },
-  { app:'Toronto Trust',    type:'fci',    section:'variable',    spread:-3.39, promo:false, limit:'Sin Límite',       info:'Toronto Ahorro FCI MM T+0' },
-  { app:'IEB+',             type:'fci',    section:'variable',    spread:-4.09, promo:false, limit:'Sin Límite',       info:'FCI Money Market T+0' },
-  { app:'Balanz',           type:'fci',    section:'variable',    spread:-4.09, promo:false, limit:'Sin Límite',       info:'FCI Balanz Ahorro T+0' },
-  { app:'Claro Pay',        type:'fci',    section:'variable',    spread:-4.18, promo:false, limit:'Sin Límite',       info:'FCI Money Market T+0' },
-  { app:'PPI',              type:'fci',    section:'variable',    spread:-4.06, promo:false, limit:'Sin Límite',       info:'FCI Money Market T+0 · Portfolio Personal' },
-  { app:'Bull Market',      type:'fci',    section:'variable',    spread:-4.06, promo:false, limit:'Sin Límite',       info:'FCI Money Market T+0' },
-  { app:'Lemon Cash',       type:'fci',    section:'variable',    spread:-4.48, promo:false, limit:'Sin Límite',       info:'FCI Lemon Ahorro T+0' },
-  { app:'N1U',              type:'fci',    section:'variable',    spread:-5.76, promo:false, limit:'Sin Límite',       info:'FCI Money Market T+0' },
-  { app:'AstroPay',         type:'fci',    section:'variable',    spread:-6.28, promo:false, limit:'Sin Límite',       info:'FCI MM · administrado por Southern Trust' },
-  { app:'LB Finanzas',      type:'fci',    section:'variable',    spread:-6.28, promo:false, limit:'Sin Límite',       info:"FCI Money Market T+0 · ex Let's Bit · broker ALyC" },
-  /* ── RENDIMIENTO VARIABLE · CUENTAS ─────────────────────────── */
-  { app:'Prex',             type:'cuenta', section:'variable',    spread:-2.53, promo:false, limit:'Sin Límite',       info:'Cuenta remunerada diaria' },
-  { app:'Cuenta DNI',       type:'cuenta', section:'variable',    spread:-2.06, promo:false, limit:'Sin Límite',       info:'Banco Provincia · acreditación diaria' },
-  { app:'Reba',             type:'cuenta', section:'variable',    spread:-2.56, promo:false, limit:'Sin Límite',       info:'Cuenta remunerada diaria' },
-  { app:'Naranja X',        type:'cuenta', section:'variable',    spread:-3.56, promo:false, limit:'Hasta $750.000',   info:'Tope mensual al saldo remunerado' },
-  { app:'Carrefour Banco',  type:'cuenta', section:'variable',    spread:-3.56, promo:false, limit:'Sin Límite',       info:'Cuenta Digital Mi Carrefour · BSF regulado BCRA' },
-  { app:'Brubank',          type:'cuenta', section:'variable',    spread:-5.06, promo:false, limit:'Hasta $500.000',   info:'Acreditación automática 24/7' },
-  /* ── RENDIMIENTO GARANTIZADO ────────────────────────────────── */
-  { app:'Crédito Regional', type:'plazo',  section:'garantizado', spread: 3.94, promo:false, limit:'Sin Límite',       info:'Compañía Financiera · Plazo Fijo 30d · tasa líder' },
-  { app:'Banco VOII',       type:'plazo',  section:'garantizado', spread: 3.44, promo:false, limit:'Sin Límite',       info:'Banco Regional · Plazo Fijo 30d digital' },
-  { app:'Banco Meridian',   type:'plazo',  section:'garantizado', spread: 2.44, promo:false, limit:'Sin Límite',       info:'Banco Regional · Plazo Fijo 30d' },
-  { app:'Bibank',           type:'plazo',  section:'garantizado', spread: 2.44, promo:false, limit:'Sin Límite',       info:'Banco Digital · Plazo Fijo 30d' },
-  { app:'Banco Masventas',  type:'plazo',  section:'garantizado', spread: 2.44, promo:false, limit:'Sin Límite',       info:'Banco Regional · Plazo Fijo 30d' },
-  { app:'Banco CMF',        type:'plazo',  section:'garantizado', spread: 1.69, promo:false, limit:'Sin Límite',       info:'Banco · Plazo Fijo 30d' },
-  { app:'Banco Bica',       type:'plazo',  section:'garantizado', spread: 1.44, promo:false, limit:'Sin Límite',       info:'Banco Regional · Cuenta Click disponible' },
-  { app:'Banco Del Sol',    type:'plazo',  section:'garantizado', spread: 0.44, promo:false, limit:'Sin Límite',       info:'Banco Digital · Plazo Fijo 30d' },
-  { app:'Banco Mariva',     type:'plazo',  section:'garantizado', spread:-0.56, promo:false, limit:'Sin Límite',       info:'Banco · Plazo Fijo 30d' },
-  { app:'Banco Provincia',  type:'plazo',  section:'garantizado', spread:-2.06, promo:false, limit:'Sin Límite',       info:'Banco Provincial BsAs · PF online y sucursal' },
-  { app:'Banco Hipotecario',type:'plazo',  section:'garantizado', spread:-2.56, promo:false, limit:'Sin Límite',       info:'Banco Nacional · Plazo Fijo 30d' },
-  { app:'Banco Macro',      type:'plazo',  section:'garantizado', spread:-2.56, promo:false, limit:'Sin Límite',       info:'Plazo Fijo 30d · sucursales y app' },
-  { app:'ICBC',             type:'plazo',  section:'garantizado', spread:-2.76, promo:false, limit:'Sin Límite',       info:'Banco Internacional · Plazo Fijo online' },
-  { app:'BBVA',             type:'plazo',  section:'garantizado', spread:-2.81, promo:false, limit:'Sin Límite',       info:'Plazo Fijo online y sucursal' },
-  { app:'Banco Nación',     type:'plazo',  section:'garantizado', spread:-3.06, promo:false, limit:'Sin Límite',       info:'Plazo Fijo 30d · sucursales nacionales' },
-  { app:'Banco Galicia',    type:'plazo',  section:'garantizado', spread:-3.31, promo:false, limit:'Sin Límite',       info:'Plazo Fijo 30d · sucursales y app' },
-  { app:'Banco Ciudad',     type:'plazo',  section:'garantizado', spread:-3.56, promo:false, limit:'Sin Límite',       info:'Banco Municipal GCBA · Plazo Fijo 30d' },
-  { app:'Banco Comafi',     type:'plazo',  section:'garantizado', spread:-3.56, promo:false, limit:'Sin Límite',       info:'Banco Nacional · Plazo Fijo 30d' },
-  { app:'Supervielle',      type:'plazo',  section:'garantizado', spread:-3.56, promo:false, limit:'Sin Límite',       info:'Banco Nacional · Plazo Fijo 30d y app' },
-  { app:'Banco Credicoop',  type:'plazo',  section:'garantizado', spread:-4.06, promo:false, limit:'Sin Límite',       info:'Banco Cooperativo · Plazo Fijo 30d' },
-  { app:'Banco Patagonia',  type:'plazo',  section:'garantizado', spread:-4.06, promo:false, limit:'Sin Límite',       info:'Banco Nacional · Plazo Fijo 30d' },
-  { app:'Bind',             type:'plazo',  section:'garantizado', spread:-5.06, promo:false, limit:'Sin Límite',       info:'Banco Industrial · Plazo Fijo Digital 30d' },
-  { app:'Fiwind',           type:'plazo',  section:'garantizado', spread:-5.36, promo:false, limit:'Sin Límite',       info:'Plazo Fijo Digital, mínimo 30 días' },
-  { app:'Santander',        type:'plazo',  section:'garantizado', spread:-6.56, promo:false, limit:'Sin Límite',       info:'Plazo Fijo online y sucursal' },
-  /* ── CONDICIONES ESPECIALES ─────────────────────────────────── */
-  { app:'Ualá',             type:'cuenta', section:'especial',    spread: 4.44, promo:true,  limit:'Hasta $3.000.000', info:'Tasa promo 90 días, solo nuevos usuarios', condicion:'Solo nuevos usuarios · Primeros 90 días' },
-];
 
 const USD_PROFILES = [
   { app:'Fiwind',        type:'plazo',  tna:7.5, promo:false, limit:'Hasta U$S 50.000', info:'Plazo Fijo USD, mínimo 30 días' },
@@ -872,24 +830,14 @@ function Sidebar({ t, noticias }) {
         )}
       </div>
 
-      {/* Ad 1 */}
-      <div style={{ background:'#f8fafc', border:'1px dashed #e2e8f0', borderRadius:2, padding:14, marginBottom:16, textAlign:'center' }}>
-        <div style={{ fontSize:9, color:'#94a3b8', marginBottom:8, letterSpacing:'.08em' }}>{t.adLabel}</div>
-        <div style={{
-          width:'100%', height:250, background:'#e9eef5', borderRadius:2,
-          display:'flex', alignItems:'center', justifyContent:'center',
-          color:'#94a3b8', fontSize:12, fontWeight:600,
-        }}>300×250</div>
+      {/* Ad sidebar 1 */}
+      <div style={{ marginBottom:12 }}>
+        <AdBanner adId="cocos" compact={true} />
       </div>
 
-      {/* Ad 2 */}
-      <div style={{ background:'#f8fafc', border:'1px dashed #e2e8f0', borderRadius:2, padding:14, textAlign:'center' }}>
-        <div style={{ fontSize:9, color:'#94a3b8', marginBottom:8, letterSpacing:'.08em' }}>{t.adLabel}</div>
-        <div style={{
-          width:'100%', height:250, background:'#e9eef5', borderRadius:2,
-          display:'flex', alignItems:'center', justifyContent:'center',
-          color:'#94a3b8', fontSize:12, fontWeight:600,
-        }}>300×250</div>
+      {/* Ad sidebar 2 */}
+      <div>
+        <AdBanner adId="iol" compact={true} />
       </div>
     </div>
     </div>
@@ -1104,7 +1052,6 @@ function HistorialView({ appId, onBack, arsData, t }) {
   }, [appId]);
 
   const arsItem = arsData.items.find(i => i.app === appId);
-  const profile = ARS_PROFILES.find(p => p.app === appId);
 
   const fmtTNA  = v => `${v.toFixed(1)}%`;
   const fmtDate = s => {
@@ -1338,7 +1285,7 @@ function HistorialView({ appId, onBack, arsData, t }) {
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom: infoItem.condicion ? 12 : 0 }}>
                   {[
                     { label:'Límite de inversión', val:infoItem.limit, sub:'informado por la entidad' },
-                    { label:'Spread vs BADLAR',    val:profile ? `${profile.spread>=0?'+':''}${profile.spread} pp` : '—', sub: meta?.spreadType || 'estimado' },
+                    { label:'Spread vs BADLAR',    val:arsItem ? `${arsItem.spread>=0?'+':''}${arsItem.spread} pp` : '—', sub: meta?.spreadType || 'estimado' },
                   ].map(f => (
                     <div key={f.label} style={{ padding:'10px 12px', background:'var(--surface-2)', borderRadius:2, border:'1px solid var(--border-lt)' }}>
                       <div style={{ fontSize:9, fontWeight:700, color:'var(--txt-3)', letterSpacing:'.07em', textTransform:'uppercase', marginBottom:4 }}>{f.label}</div>
@@ -2424,6 +2371,1075 @@ function TransporteSectionHeader({ title, count, color, bg }) {
   );
 }
 
+/* ═══════════════════════════════════════
+   EDITORIAL — "Más información para ahorrar e invertir"
+═══════════════════════════════════════ */
+
+function inferCategory(title) {
+  const t = (title || '').toLowerCase();
+  if (/dólar|dolar|mep|blue|ccl|tipo de cambio/.test(t))                return { label:'DÓLAR',         color:'#1d4ed8' };
+  if (/bitcoin|cripto|ethereum|crypto|token|blockchain/.test(t))         return { label:'CRIPTOMONEDAS', color:'#7c3aed' };
+  if (/cedear/.test(t))                                                   return { label:'CEDEARs',       color:'#6d28d9' };
+  if (/merval|acciones|adr/.test(t))                                      return { label:'ACCIONES',      color:'#be185d' };
+  if (/\boro\b|gold|onza troy/.test(t))                                   return { label:'ORO',           color:'#d97706' };
+  if (/plazo fijo|tasa|badlar|rendimiento|interés|interes/.test(t))      return { label:'AHORRO',        color:'#44685c' };
+  if (/fci|fondo|money market|inversión|inversion|bono|acción/.test(t))  return { label:'INVERSIONES',  color:'#b45309' };
+  if (/billetera|fintech|digital|wallet|mercadopago|naranja|ualá/.test(t)) return { label:'FINTECH',    color:'#0891b2' };
+  if (/banco|bcra|central/.test(t))                                      return { label:'BANCOS',        color:'#1e40af' };
+  if (/supermercado|descuento|promo|carrefour|cencosud|coto|dia/.test(t)) return { label:'SUPERMERCADOS', color:'#dc2626' };
+  if (/combustible|nafta|gasoil|ypf|shell|axion/.test(t))                return { label:'COMBUSTIBLES', color:'#ea580c' };
+  if (/movilidad|transporte|subte|colectivo|sube|peaje|telepase/.test(t)) return { label:'MOVILIDAD',   color:'#0f766e' };
+  return { label:'ECONOMÍA', color:'#475569' };
+}
+
+const ADVERTISERS = {
+  cocos: {
+    id:'cocos', name:'Cocos Capital', route:'cocos',
+    tag:'Inversiones · FCI · CEDEARs',
+    headline:'Tu portafolio,\ntu crecimiento.',
+    sub:'FCI, acciones, CEDEARs y bonos desde la plataforma de inversión más elegante de Argentina.',
+    cta:'Abrir cuenta gratis',
+    badge:'35.000+ inversores',
+    perks:['Sin mínimo de inversión','Liquidez T+0','Rendimientos reales'],
+    bg1:'#071510', bg2:'#0b1e15',
+    accent:'#00C88C', accentDim:'rgba(0,200,140,.13)',
+  },
+  balanz: {
+    id:'balanz', name:'Balanz', route:'balanz',
+    tag:'Broker · Mercado de Capitales',
+    headline:'Invertí como\nlos profesionales.',
+    sub:'El broker institucional más grande de Argentina. Acciones, bonos, opciones y CEDEARs.',
+    cta:'Ver plataforma',
+    badge:'Líder en volumen operado',
+    perks:['Sin comisión de custodia','Operaciones en tiempo real','Soporte 24/7'],
+    bg1:'#00102b', bg2:'#00183d',
+    accent:'#4d94ff', accentDim:'rgba(77,148,255,.13)',
+  },
+  iol: {
+    id:'iol', name:'Invertir Online', route:'iol',
+    tag:'Broker · 25 años en el mercado',
+    headline:'CEDEARs, acciones\ny bonos. Todo acá.',
+    sub:'El broker N°1 de Argentina. Accedé a los mercados locales e internacionales en tiempo real.',
+    cta:'Comenzar gratis',
+    badge:'N°1 en Argentina',
+    perks:['CEDEARs sin restricciones','Dólar cable integrado','App premiada'],
+    bg1:'#1a0008', bg2:'#21000d',
+    accent:'#ff3358', accentDim:'rgba(255,51,88,.13)',
+  },
+  lemon: {
+    id:'lemon', name:'Lemon', route:'lemon',
+    tag:'Crypto · Staking · VISA',
+    headline:'Cripto simple.\nRendimientos reales.',
+    sub:'Comprá BTC, ETH y USDT. Pagá con tu tarjeta VISA Lemon y ganá cashback en cripto.',
+    cta:'Descubrir Lemon',
+    badge:'Tarjeta VISA gratis',
+    perks:['Rendimientos en USDT','Sin comisión de apertura','Cashback automático'],
+    bg1:'#0d0a00', bg2:'#1c1400',
+    accent:'#FFD100', accentDim:'rgba(255,209,0,.13)',
+  },
+  belo: {
+    id:'belo', name:'Belo', route:'belo',
+    tag:'Fintech · Crypto · Pagos',
+    headline:'Tu billetera.\nSin fronteras.',
+    sub:'Cobrá en dólares, ahorrá en USDT e invertí desde una sola app. Con tarjeta Mastercard.',
+    cta:'Explorar Belo',
+    badge:'Pagos internacionales',
+    perks:['USD, BTC y USDT','Sin límites de retiro','Tarjeta Mastercard gratis'],
+    bg1:'#0d0620', bg2:'#12082c',
+    accent:'#a78bfa', accentDim:'rgba(167,139,250,.13)',
+  },
+};
+
+function NewsCard({ n }) {
+  return (
+    <a href={n.link} target="_blank" rel="noopener noreferrer" style={{ textDecoration:'none', display:'block', height:'100%' }}>
+      <div
+        style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:4, overflow:'hidden', height:'100%', display:'flex', flexDirection:'column', transition:'box-shadow .2s, transform .2s' }}
+        onMouseEnter={e => { e.currentTarget.style.boxShadow='0 8px 28px var(--shadow-md)'; e.currentTarget.style.transform='translateY(-2px)'; }}
+        onMouseLeave={e => { e.currentTarget.style.boxShadow='none'; e.currentTarget.style.transform='none'; }}
+      >
+        {n.image ? (
+          <div style={{ position:'relative', height:180, overflow:'hidden', flexShrink:0 }}>
+            <img src={n.image} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}
+              onError={e => { e.target.style.display='none'; e.target.parentNode.style.background='linear-gradient(135deg,#44685c,#2d4a40)'; }} />
+          </div>
+        ) : (
+          <div style={{ height:120, background:'linear-gradient(135deg,#44685c 0%,#2d4a40 100%)', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/>
+              <path d="M18 14h-8M15 18h-5M10 6h8v4h-8z"/>
+            </svg>
+          </div>
+        )}
+        <div style={{ padding:'16px', flex:1, display:'flex', flexDirection:'column' }}>
+          {n.dateStr && <div style={{ fontSize:10, fontWeight:600, color:'var(--txt-3)', letterSpacing:'.04em', textTransform:'uppercase', marginBottom:8 }}>{n.dateStr}</div>}
+          <div style={{ fontSize:14, fontWeight:700, color:'var(--txt-1)', lineHeight:1.45, marginBottom:8, flex:1 }}>{n.title}</div>
+          {n.desc && <p style={{ fontSize:12, color:'var(--txt-2)', lineHeight:1.6, margin:'0 0 14px' }}>{n.desc}</p>}
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', paddingTop:10, borderTop:'1px solid var(--border-lt)' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:11, fontWeight:700, color:'#44685c' }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#44685c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              </svg>
+              lanacion.com.ar
+            </div>
+            <div style={{ display:'flex', alignItems:'center', gap:4, fontSize:11, color:'var(--txt-3)', fontWeight:600 }}>
+              Leer nota
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17L17 7M7 7h10v10"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </a>
+  );
+}
+
+function ExpandableNewsGrid({ noticias, isMobile }) {
+  const INITIAL = 6;
+  const extra   = noticias.slice(INITIAL);
+  const hasMore = extra.length > 0;
+  const [expanded,   setExpanded]   = React.useState(false);
+  const [collapsing, setCollapsing] = React.useState(false);
+  const extraRef = React.useRef(null);
+
+  const doExpand = () => {
+    const el = extraRef.current;
+    if (!el) { setExpanded(true); return; }
+    el.style.transition = 'none';
+    el.style.overflow   = 'hidden';
+    el.style.maxHeight  = '0px';
+    setExpanded(true);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      el.style.transition = 'max-height 520ms cubic-bezier(.22,.68,0,1.2)';
+      el.style.maxHeight  = el.scrollHeight + 'px';
+      setTimeout(() => { el.style.maxHeight = ''; el.style.overflow = ''; el.style.transition = ''; }, 530);
+    }));
+  };
+
+  const doCollapse = () => {
+    const el = extraRef.current;
+    if (!el) { setExpanded(false); return; }
+    const h = el.offsetHeight;
+    el.style.transition = 'none';
+    el.style.overflow   = 'hidden';
+    el.style.maxHeight  = h + 'px';
+    setCollapsing(true);
+    /* Subir la misma altura que se colapsa — el botón queda quieto en pantalla */
+    window.scrollBy({ top: -h, behavior: 'smooth' });
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      el.style.transition = 'max-height 400ms cubic-bezier(.4,0,.2,1)';
+      el.style.maxHeight  = '0px';
+      setTimeout(() => { setExpanded(false); setCollapsing(false); el.style.maxHeight = ''; el.style.overflow = ''; el.style.transition = ''; }, 410);
+    }));
+  };
+
+  const cols = { display:'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2,1fr)', gap:16 };
+  const showExtra = expanded || collapsing;
+
+  return (
+    <>
+      {/* Primeras 6 — siempre visibles */}
+      <div style={cols}>
+        {noticias.slice(0, INITIAL).map((n, i) => <NewsCard key={i} n={n} />)}
+      </div>
+
+      {/* Extra — colapsable */}
+      {hasMore && showExtra && (
+        <div ref={extraRef}>
+          <div style={{ ...cols, marginTop:16 }}>
+            {extra.map((n, i) => (
+              <div key={i} className="slide-up" style={{ animationDelay:`${i * 0.04}s` }}>
+                <NewsCard n={n} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Botón Ver más / Ver menos */}
+      {hasMore && (
+        <button
+          onClick={expanded ? doCollapse : doExpand}
+          style={{
+            width:'100%', marginTop:14, padding:'12px 0',
+            display:'flex', alignItems:'center', justifyContent:'center', gap:8,
+            background:'var(--surface)', border:'1px solid var(--border)', borderRadius:4,
+            cursor:'pointer', fontFamily:'inherit', fontWeight:700, fontSize:13,
+            color: expanded ? 'var(--txt-2)' : '#44685c',
+            transition:'background .15s, color .15s, border-color .15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background='var(--hover-bg)'; e.currentTarget.style.borderColor='#44685c'; }}
+          onMouseLeave={e => { e.currentTarget.style.background='var(--surface)'; e.currentTarget.style.borderColor='var(--border)'; }}
+        >
+          {expanded ? (
+            <>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+              Ver menos
+            </>
+          ) : (
+            <>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+              Ver {extra.length} noticias más
+            </>
+          )}
+        </button>
+      )}
+    </>
+  );
+}
+
+function FeaturedCarousel() {
+  const SLIDES = [
+    {
+      type:'editorial', cat:'FINANZAS PERSONALES', catColor:'#2563eb',
+      title:'El nuevo hábito financiero: por qué se disparan las transferencias internacionales desde Argentina',
+      sub:'Las billeteras digitales lideran el cambio en cómo los argentinos manejan su dinero en 2026.',
+      img:'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=1400&q=90&auto=format&fit=crop',
+      link:'#',
+    },
+    {
+      type:'editorial', cat:'INVERSIONES', catColor:'#44685c',
+      title:'FCI money market vs plazo fijo: cuál rinde más en el escenario actual',
+      sub:'Comparativa de rendimientos en el trimestre tomando BADLAR como referencia.',
+      img:'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1400&q=90&auto=format&fit=crop',
+      link:'#',
+    },
+    {
+      type:'ad', id:'lemon', cat:'PUBLICIDAD', catColor:'#b07d00',
+      title:'Cripto simple. Rendimientos reales.',
+      sub:'Comprá, vendé y ahorrá en cripto con tu tarjeta VISA Lemon.',
+      cta:'Descubrir Lemon', route:'/go/lemon',
+      img:'https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=1400&q=90&auto=format&fit=crop',
+      c1:'#b07d00', c2:'#7a5500',
+    },
+    {
+      type:'editorial', cat:'AHORRO', catColor:'#0891b2',
+      title:'Aguinaldo 2026: plazo fijo, FCI o billetera virtual, cuál rinde más este junio',
+      sub:'Con el cobro del SAC, economistas recomiendan diversificar según monto y horizonte de inversión.',
+      img:'https://images.unsplash.com/photo-1579621970795-87facc2f976d?w=1400&q=90&auto=format&fit=crop',
+      link:'#',
+    },
+    {
+      type:'editorial', cat:'MERCADOS', catColor:'#dc2626',
+      title:'CEDEARs más operados: cómo invertir en Apple, Google y Amazon desde Argentina',
+      sub:'Los certificados de depósito argentinos permiten acceder a empresas del exterior en pesos.',
+      img:'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=1400&q=90&auto=format&fit=crop',
+      link:'#',
+    },
+    {
+      type:'ad', id:'belo', cat:'PUBLICIDAD', catColor:'#6d28d9',
+      title:'Tu billetera. Tu dinero.',
+      sub:'Cobrá, ahorrá e invertí en pesos y criptomonedas desde una sola app.',
+      cta:'Explorar Belo', route:'/go/belo',
+      img:'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1400&q=90&auto=format&fit=crop',
+      c1:'#6d28d9', c2:'#3b0764',
+    },
+    {
+      type:'editorial', cat:'TECNOLOGÍA', catColor:'#7c3aed',
+      title:'Billeteras digitales 2026: las apps fintech que más crecen en Argentina',
+      sub:'El ecosistema fintech argentino supera los 30 millones de usuarios activos este año.',
+      img:'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1400&q=90&auto=format&fit=crop',
+      link:'#',
+    },
+  ];
+
+  const n = SLIDES.length;
+  const [cur, setCur] = React.useState(0);
+  const timerRef = React.useRef(null);
+
+  const resetTimer = () => {
+    clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => setCur(c => (c + 1) % n), 5500);
+  };
+
+  React.useEffect(() => {
+    timerRef.current = setInterval(() => setCur(c => (c + 1) % n), 5500);
+    return () => clearInterval(timerRef.current);
+  }, []);
+
+  React.useEffect(() => {
+    const s = SLIDES[cur];
+    if (s.type === 'ad') {
+      fetch(`/api/ads/${s.id}/impression`, { method:'POST' }).catch(() => {});
+    }
+  }, [cur]);
+
+  const prev = () => { setCur(c => (c - 1 + n) % n); resetTimer(); };
+  const next = () => { setCur(c => (c + 1) % n); resetTimer(); };
+
+  const s = SLIDES[cur];
+
+  const handleClick = () => {
+    if (s.type === 'ad') window.open(s.route + '?pos=carousel', '_blank', 'noopener noreferrer');
+    else if (s.link && s.link !== '#') window.open(s.link, '_blank', 'noopener noreferrer');
+  };
+
+  const BTN = {
+    position:'absolute', top:'50%', transform:'translateY(-50%)',
+    width:40, height:40, borderRadius:'50%',
+    background:'rgba(0,0,0,.45)', border:'1.5px solid rgba(255,255,255,.3)',
+    color:'#fff', cursor:'pointer', fontFamily:'inherit',
+    display:'flex', alignItems:'center', justifyContent:'center',
+    fontSize:22, lineHeight:1, transition:'background .15s',
+    zIndex:2,
+  };
+
+  return (
+    <div style={{ marginTop:36 }}>
+      {/* Header sección */}
+      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14, paddingBottom:10, borderBottom:'2px solid var(--border)' }}>
+        <span style={{ fontWeight:900, fontSize:11, letterSpacing:'.13em', textTransform:'uppercase', color:'var(--txt-2)' }}>Finanzas Personales</span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#44685c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+
+      {/* Carrusel */}
+      <div
+        style={{ position:'relative', borderRadius:6, overflow:'hidden', height:'clamp(230px,36vw,420px)', cursor: s.type==='ad' ? 'pointer' : 'default' }}
+        onClick={handleClick}
+      >
+        {/* Imagen de fondo */}
+        <img
+          key={cur}
+          src={s.img} alt=""
+          style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', display:'block', animation:'fadeIn .45s ease-out' }}
+          onError={e => { e.target.style.display='none'; }}
+        />
+        {/* Fondo de color para ads (fallback o overlay) */}
+        {s.type === 'ad' && (
+          <div style={{ position:'absolute', inset:0, background:`linear-gradient(135deg,${s.c1},${s.c2})`, opacity:.55 }} />
+        )}
+        {/* Overlay degradado */}
+        <div style={{ position:'absolute', inset:0, background:'linear-gradient(to top, rgba(0,0,0,.84) 0%, rgba(0,0,0,.42) 50%, rgba(0,0,0,.18) 100%)' }} />
+
+        {/* Contenido centrado */}
+        <div style={{ position:'absolute', bottom:0, left:0, right:0, padding:'0 56px 40px', textAlign:'center' }}>
+          <span style={{
+            display:'inline-block', marginBottom:12,
+            fontSize:9, fontWeight:900, letterSpacing:'.15em', textTransform:'uppercase',
+            background: s.catColor, color:'#fff', padding:'4px 12px', borderRadius:3,
+          }}>{s.cat}</span>
+          <h2 style={{ margin:'0 auto 10px', fontSize:'clamp(15px,2.6vw,26px)', fontWeight:800, color:'#fff', lineHeight:1.3, maxWidth:680 }}>{s.title}</h2>
+          <p style={{ margin:'0 auto', fontSize:'clamp(11px,1.4vw,13px)', color:'rgba(255,255,255,.75)', lineHeight:1.6, maxWidth:520 }}>{s.sub}</p>
+          {s.type === 'ad' && (
+            <button
+              onClick={e => { e.stopPropagation(); handleClick(); }}
+              style={{ marginTop:14, padding:'9px 22px', background:'#fff', color:'#0f172a', border:'none', borderRadius:4, fontSize:12, fontWeight:800, cursor:'pointer', fontFamily:'inherit', letterSpacing:'.01em' }}
+            >{s.cta} →</button>
+          )}
+        </div>
+
+        {/* Flechas */}
+        <button onClick={e => { e.stopPropagation(); prev(); }} style={{ ...BTN, left:14 }}
+          onMouseEnter={e => e.currentTarget.style.background='rgba(0,0,0,.72)'}
+          onMouseLeave={e => e.currentTarget.style.background='rgba(0,0,0,.45)'}
+        >‹</button>
+        <button onClick={e => { e.stopPropagation(); next(); }} style={{ ...BTN, right:14 }}
+          onMouseEnter={e => e.currentTarget.style.background='rgba(0,0,0,.72)'}
+          onMouseLeave={e => e.currentTarget.style.background='rgba(0,0,0,.45)'}
+        >›</button>
+
+        {/* Dots */}
+        <div style={{ position:'absolute', bottom:14, left:0, right:0, display:'flex', justifyContent:'center', gap:5, zIndex:2 }}>
+          {SLIDES.map((_, i) => (
+            <button key={i}
+              onClick={e => { e.stopPropagation(); setCur(i); resetTimer(); }}
+              style={{
+                width: i===cur ? 20 : 7, height:7, borderRadius:4,
+                border:'none', cursor:'pointer', padding:0,
+                background: i===cur ? '#fff' : 'rgba(255,255,255,.4)',
+                transition:'width .25s, background .2s',
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function brandVisual(ad) {
+  const { id, accent, accentDim } = ad;
+  const glass = {
+    background:'rgba(255,255,255,.07)',
+    backdropFilter:'blur(16px)', WebkitBackdropFilter:'blur(16px)',
+    border:'1px solid rgba(255,255,255,.11)', borderRadius:14,
+  };
+
+  if (id === 'cocos') return (
+    <div style={{ position:'relative',width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',padding:20 }}>
+      <div style={{ ...glass,padding:'18px 22px',width:218,border:`1px solid ${accent}44` }}>
+        <div style={{ fontSize:9,color:'rgba(255,255,255,.4)',fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',marginBottom:6 }}>Portfolio Total</div>
+        <div style={{ fontSize:25,fontWeight:900,color:'#fff',letterSpacing:'-.5px',marginBottom:2 }}>$1.240.500</div>
+        <div style={{ fontSize:11,color:accent,fontWeight:700,marginBottom:12 }}>▲ +31.4% este año</div>
+        <svg width="174" height="38" viewBox="0 0 174 38">
+          <defs><linearGradient id="cocosG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#00C88C" stopOpacity=".45"/><stop offset="100%" stopColor="#00C88C" stopOpacity="0"/></linearGradient></defs>
+          <path d="M0 34 L22 28 L44 23 L66 17 L88 11 L110 7 L132 4 L154 2 L174 0" fill="none" stroke="#00C88C" strokeWidth="2.5" strokeLinecap="round"/>
+          <path d="M0 34 L22 28 L44 23 L66 17 L88 11 L110 7 L132 4 L154 2 L174 0 L174 38 L0 38Z" fill="url(#cocosG)"/>
+        </svg>
+        <div style={{ display:'flex',gap:5,marginTop:12 }}>
+          {['FCI','Bonos','CEDEARs'].map(l=><span key={l} style={{ fontSize:9,padding:'3px 8px',borderRadius:20,background:accentDim,color:accent,fontWeight:700,border:`1px solid ${accent}44` }}>{l}</span>)}
+        </div>
+      </div>
+      <div style={{ position:'absolute',top:18,right:14,...glass,padding:'10px 14px',border:`1px solid ${accent}55`,textAlign:'center',minWidth:86 }}>
+        <div style={{ fontSize:9,color:'rgba(255,255,255,.4)',marginBottom:3 }}>FCI T+0</div>
+        <div style={{ fontSize:18,fontWeight:900,color:accent,lineHeight:1 }}>+42.8%</div>
+        <div style={{ fontSize:9,color:'rgba(255,255,255,.32)',marginTop:2 }}>TNA anual</div>
+      </div>
+    </div>
+  );
+
+  if (id === 'balanz') {
+    const bars=[{o:28,c:18,h:30,l:15},{o:18,c:26,h:28,l:16},{o:26,c:22,h:29,l:20},{o:22,c:30,h:32,l:20},{o:30,c:24,h:32,l:22},{o:24,c:32,h:34,l:22},{o:32,c:28,h:34,l:26},{o:28,c:36,h:38,l:26}];
+    return (
+      <div style={{ position:'relative',width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',padding:20 }}>
+        <div style={{ ...glass,padding:'16px 20px',width:230,border:`1px solid ${accent}44` }}>
+          <div style={{ display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:12 }}>
+            <div>
+              <div style={{ fontSize:9,color:'rgba(255,255,255,.4)',fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase' }}>MERVAL</div>
+              <div style={{ fontSize:21,fontWeight:900,color:'#fff',letterSpacing:'-.3px',lineHeight:1.1 }}>1.842.350</div>
+              <div style={{ fontSize:11,color:accent,fontWeight:700,marginTop:2 }}>▲ +2.4% hoy</div>
+            </div>
+            <span style={{ fontSize:8,color:accent,padding:'3px 8px',background:accentDim,borderRadius:6,fontWeight:700 }}>En vivo</span>
+          </div>
+          <svg width="186" height="54" viewBox="0 0 186 54">
+            {bars.map((b,i)=>{ const x=i*22+4,isG=b.c>b.o,col=isG?accent:'#ff6b6b',top=Math.min(b.o,b.c),ht=Math.abs(b.c-b.o); return <g key={i}><line x1={x+7} y1={52-b.h} x2={x+7} y2={52-b.l} stroke={col} strokeWidth="1.5"/><rect x={x} y={52-top-ht} width="14" height={Math.max(ht,2)} fill={col} rx="2"/></g>; })}
+          </svg>
+        </div>
+        <div style={{ position:'absolute',top:14,right:8,display:'flex',flexDirection:'column',gap:5 }}>
+          {[['AL30','▲+1.8%',true],['GD35','▲+2.1%',true],['YPF','▼−0.4%',false]].map(([t,p,u])=>(
+            <div key={t} style={{ ...glass,padding:'5px 10px',borderRadius:8,display:'flex',gap:10,alignItems:'center',minWidth:116 }}>
+              <span style={{ fontSize:10,fontWeight:800,color:'#fff' }}>{t}</span>
+              <span style={{ fontSize:10,fontWeight:700,color:u?accent:'#ff6b6b',marginLeft:'auto' }}>{p}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (id === 'iol') {
+    const stocks=[{sym:'AAPL',name:'Apple',price:'$221.40',chg:'+1.24%',up:true},{sym:'GOOGL',name:'Alphabet',price:'$183.20',chg:'+0.87%',up:true},{sym:'AMZN',name:'Amazon',price:'$198.60',chg:'−0.32%',up:false},{sym:'TSLA',name:'Tesla',price:'$176.90',chg:'+3.41%',up:true}];
+    return (
+      <div style={{ position:'relative',width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',padding:20 }}>
+        <div style={{ ...glass,padding:'14px 18px',width:236,border:`1px solid ${accent}44` }}>
+          <div style={{ fontSize:9,color:'rgba(255,255,255,.4)',fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',marginBottom:10 }}>Mis CEDEARs</div>
+          {stocks.map((s,i)=>(
+            <div key={s.sym} style={{ display:'flex',alignItems:'center',gap:10,padding:'7px 0',borderBottom:i<stocks.length-1?'1px solid rgba(255,255,255,.06)':'' }}>
+              <div style={{ width:28,height:28,borderRadius:8,background:`${accent}22`,border:`1px solid ${accent}44`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,fontWeight:900,color:accent,flexShrink:0 }}>{s.sym.slice(0,2)}</div>
+              <div style={{ flex:1,minWidth:0 }}>
+                <div style={{ fontSize:11,fontWeight:800,color:'#fff' }}>{s.sym}</div>
+                <div style={{ fontSize:9,color:'rgba(255,255,255,.38)' }}>{s.name}</div>
+              </div>
+              <div style={{ textAlign:'right' }}>
+                <div style={{ fontSize:11,fontWeight:700,color:'#fff' }}>{s.price}</div>
+                <div style={{ fontSize:10,fontWeight:700,color:s.up?'#4ade80':'#f87171' }}>{s.chg}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (id === 'lemon') return (
+    <div style={{ position:'relative',width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',padding:20 }}>
+      <div style={{ width:212,borderRadius:18,padding:'18px 20px',background:'linear-gradient(135deg,#1a1000 0%,#2a1c00 60%,#1a1000 100%)',border:`1px solid ${accent}55`,boxShadow:`0 8px 32px rgba(0,0,0,.5),0 0 40px ${accent}15`,position:'relative',overflow:'hidden' }}>
+        <div style={{ position:'absolute',top:-30,right:-30,width:110,height:110,borderRadius:'50%',background:`${accent}10`,pointerEvents:'none' }}/>
+        <div style={{ fontSize:8,fontWeight:800,color:`${accent}bb`,letterSpacing:'.15em',textTransform:'uppercase',marginBottom:16 }}>VISA Lemon Card</div>
+        <div style={{ marginBottom:12 }}>
+          <div style={{ fontSize:9,color:'rgba(255,255,255,.38)',marginBottom:2 }}>Balance USDT</div>
+          <div style={{ fontSize:23,fontWeight:900,color:'#fff',letterSpacing:'-.3px' }}>$1,842.50</div>
+        </div>
+        <div style={{ display:'flex',gap:8,marginBottom:14 }}>
+          {[['BTC','0.0241','+4.2%'],['ETH','1.840','+1.8%']].map(([sym,amt,chg])=>(
+            <div key={sym} style={{ flex:1,background:'rgba(255,255,255,.07)',borderRadius:8,padding:'7px 9px' }}>
+              <div style={{ fontSize:9,color:`${accent}bb`,fontWeight:700 }}>{sym}</div>
+              <div style={{ fontSize:11,fontWeight:800,color:'#fff' }}>{amt}</div>
+              <div style={{ fontSize:9,color:'#4ade80',fontWeight:700 }}>{chg}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display:'flex',gap:3,alignItems:'center' }}>
+          {[0,1,2].map(i=><div key={i} style={{ display:'flex',gap:2 }}>{[0,1,2,3].map(j=><div key={j} style={{ width:4,height:4,borderRadius:'50%',background:'rgba(255,255,255,.28)' }}/>)}</div>)}
+          <span style={{ fontSize:11,color:'rgba(255,255,255,.55)',marginLeft:5,fontWeight:600,letterSpacing:'1px' }}>3829</span>
+        </div>
+      </div>
+      <div style={{ position:'absolute',top:16,right:12,...glass,padding:'8px 12px',borderRadius:10,border:`1px solid ${accent}55`,textAlign:'center' }}>
+        <div style={{ fontSize:9,color:'rgba(255,255,255,.38)' }}>BTC/USD</div>
+        <div style={{ fontSize:15,fontWeight:900,color:accent,lineHeight:1.1 }}>$67.420</div>
+        <div style={{ fontSize:9,color:'#4ade80',fontWeight:700 }}>▲ +4.2%</div>
+      </div>
+    </div>
+  );
+
+  if (id === 'belo') return (
+    <div style={{ position:'relative',width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',padding:20 }}>
+      <div style={{ ...glass,padding:'16px 20px',width:228,border:`1px solid ${accent}44` }}>
+        <div style={{ fontSize:9,color:'rgba(255,255,255,.4)',fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',marginBottom:10 }}>Mi Billetera Belo</div>
+        <div style={{ marginBottom:12 }}>
+          <div style={{ fontSize:9,color:'rgba(255,255,255,.38)',marginBottom:2 }}>Balance total</div>
+          <div style={{ fontSize:23,fontWeight:900,color:'#fff',letterSpacing:'-.3px' }}>$4.230 USD</div>
+        </div>
+        {[{sym:'USDT',name:'Tether',bal:'2.100,00',icon:'◈'},{sym:'USD',name:'Dólar',bal:'1.830,00',icon:'$'},{sym:'BTC',name:'Bitcoin',bal:'0.00521',icon:'₿'}].map((a,i)=>(
+          <div key={a.sym} style={{ display:'flex',alignItems:'center',gap:10,padding:'8px 0',borderBottom:i<2?'1px solid rgba(255,255,255,.06)':'' }}>
+            <div style={{ width:30,height:30,borderRadius:10,background:`${accent}22`,border:`1px solid ${accent}44`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,color:accent,fontWeight:900,flexShrink:0 }}>{a.icon}</div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:11,fontWeight:800,color:'#fff' }}>{a.sym}</div>
+              <div style={{ fontSize:9,color:'rgba(255,255,255,.38)' }}>{a.name}</div>
+            </div>
+            <div style={{ fontSize:11,fontWeight:700,color:'rgba(255,255,255,.78)' }}>{a.bal}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ position:'absolute',bottom:18,right:10,display:'flex',gap:6 }}>
+        {['Enviar','Cobrar'].map(l=><div key={l} style={{ ...glass,padding:'5px 12px',borderRadius:20,fontSize:9,fontWeight:700,color:accent,border:`1px solid ${accent}44`,cursor:'default' }}>{l}</div>)}
+      </div>
+    </div>
+  );
+
+  return null;
+}
+
+function AdBanner({ adId, compact }) {
+  const ad = ADVERTISERS[adId];
+  const [hov, setHov] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!ad) return;
+    fetch(`/api/ads/${ad.id}/impression`, { method:'POST' }).catch(() => {});
+  }, [ad && ad.id]);
+
+  if (!ad) return (
+    <div style={{ width:'100%',height:compact?80:180,background:'var(--surface)',border:'1px dashed #334155',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center' }}>
+      <span style={{ fontSize:9,color:'#475569',letterSpacing:'.12em',textTransform:'uppercase' }}>Publicidad</span>
+    </div>
+  );
+
+  const { id, name, tag, headline, sub, cta, badge, perks, bg1, bg2, accent, accentDim, route } = ad;
+  const isDark = accent === '#FFD100';
+  const go = () => window.open(`/go/${route}?pos=${compact?'compact':'full'}`, '_blank', 'noopener noreferrer');
+
+  /* ── COMPACT ── */
+  if (compact) return (
+    <div onClick={go} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
+      style={{ width:'100%',borderRadius:12,overflow:'hidden',cursor:'pointer',position:'relative',
+        background:`linear-gradient(150deg,${bg1} 0%,${bg2} 100%)`,
+        border:`1px solid ${accent}33`,
+        boxShadow:hov?`0 10px 36px rgba(0,0,0,.5),0 0 24px ${accent}22`:`0 2px 14px rgba(0,0,0,.4)`,
+        transform:hov?'translateY(-2px)':'none', transition:'box-shadow .22s,transform .18s',
+      }}>
+      {/* Top accent line */}
+      <div style={{ height:2,background:`linear-gradient(to right,transparent,${accent},transparent)`,opacity:.7 }}/>
+      {/* Glow orb */}
+      <div style={{ position:'absolute',top:-30,right:-20,width:130,height:130,borderRadius:'50%',background:`radial-gradient(circle,${accent}14 0%,transparent 70%)`,pointerEvents:'none' }}/>
+      <div style={{ padding:'14px 16px 16px',position:'relative',zIndex:1 }}>
+        <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8 }}>
+          <span style={{ fontSize:8,fontWeight:800,color:accent,letterSpacing:'.15em',textTransform:'uppercase' }}>{tag.split('·')[0].trim()}</span>
+          <span style={{ fontSize:7,color:'rgba(255,255,255,.28)',letterSpacing:'.1em',textTransform:'uppercase' }}>publicidad</span>
+        </div>
+        <div style={{ fontSize:15,fontWeight:900,color:'#fff',letterSpacing:'-.2px',marginBottom:5 }}>{name}</div>
+        <div style={{ fontSize:12,color:'rgba(255,255,255,.6)',lineHeight:1.45,marginBottom:14 }}>{headline.split('\n')[0]}</div>
+        <button onClick={e=>{e.stopPropagation();go();}}
+          style={{ width:'100%',padding:'9px 0',background:`linear-gradient(135deg,${accent},${accent}cc)`,color:isDark?bg1:'#fff',border:'none',borderRadius:8,fontSize:12,fontWeight:800,cursor:'pointer',fontFamily:'inherit',letterSpacing:'.02em',boxShadow:`0 4px 16px ${accent}44` }}>
+          {cta}
+        </button>
+      </div>
+    </div>
+  );
+
+  /* ── FULL ── */
+  const lines = headline.split('\n');
+  return (
+    <div onClick={go} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
+      style={{ width:'100%',borderRadius:14,overflow:'hidden',cursor:'pointer',position:'relative',
+        background:`linear-gradient(140deg,${bg1} 0%,${bg2} 100%)`,
+        border:`1px solid ${accent}2a`, minHeight:230,
+        display:'flex',
+        boxShadow:hov?`0 18px 52px rgba(0,0,0,.55),0 0 44px ${accent}18`:`0 4px 22px rgba(0,0,0,.38)`,
+        transform:hov?'translateY(-2px)':'none', transition:'box-shadow .25s,transform .2s',
+      }}>
+      {/* Decoraciones fondo */}
+      <div style={{ position:'absolute',inset:0,pointerEvents:'none',overflow:'hidden' }}>
+        <div style={{ position:'absolute',top:'-40%',left:'30%',width:'65%',height:'180%',background:`radial-gradient(ellipse,${accent}0c 0%,transparent 60%)` }}/>
+        <div style={{ position:'absolute',top:0,left:0,right:0,height:2,background:`linear-gradient(to right,transparent 0%,${accent}88 40%,${accent} 50%,${accent}88 60%,transparent 100%)` }}/>
+        <svg style={{ position:'absolute',bottom:0,left:0,opacity:.05 }} width="180" height="90" viewBox="0 0 180 90">
+          {Array.from({length:9},(_,r)=>Array.from({length:18},(_,c)=><circle key={`${r}${c}`} cx={c*10+5} cy={r*10+5} r=".9" fill="#fff"/>))}
+        </svg>
+      </div>
+
+      {/* LEFT — copy */}
+      <div style={{ flex:'0 0 54%',padding:'clamp(22px,3vw,38px)',display:'flex',flexDirection:'column',justifyContent:'center',position:'relative',zIndex:2 }}>
+        <div style={{ display:'flex',alignItems:'center',gap:8,marginBottom:12 }}>
+          <span style={{ fontSize:8,fontWeight:800,color:accent,letterSpacing:'.16em',textTransform:'uppercase',padding:'3px 10px',background:accentDim,borderRadius:20,border:`1px solid ${accent}44` }}>{tag.split('·')[0].trim()}</span>
+          <span style={{ fontSize:7,color:'rgba(255,255,255,.28)',letterSpacing:'.1em',textTransform:'uppercase' }}>publicidad</span>
+        </div>
+        <div style={{ fontSize:11,fontWeight:700,color:`${accent}bb`,letterSpacing:'.07em',textTransform:'uppercase',marginBottom:8 }}>{name}</div>
+        <div style={{ fontSize:'clamp(20px,2.6vw,30px)',fontWeight:900,color:'#fff',lineHeight:1.15,letterSpacing:'-.4px',marginBottom:12 }}>
+          {lines[0]}<br/><span style={{ color:accent }}>{lines[1]}</span>
+        </div>
+        <div style={{ fontSize:13,color:'rgba(255,255,255,.58)',lineHeight:1.62,marginBottom:18,maxWidth:310 }}>{sub}</div>
+        <div style={{ display:'flex',flexWrap:'wrap',gap:6,marginBottom:22 }}>
+          {perks.map(p=>(
+            <span key={p} style={{ fontSize:10,padding:'4px 10px',background:accentDim,border:`1px solid ${accent}33`,borderRadius:20,color:'rgba(255,255,255,.68)',fontWeight:600,display:'flex',alignItems:'center',gap:4 }}>
+              <span style={{ color:accent,fontWeight:900,fontSize:9 }}>✓</span>{p}
+            </span>
+          ))}
+        </div>
+        <div style={{ display:'flex',alignItems:'center',gap:14 }}>
+          <button onClick={e=>{e.stopPropagation();go();}}
+            style={{ padding:'12px 26px',background:`linear-gradient(135deg,${accent} 0%,${accent}cc 100%)`,color:isDark?bg1:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:800,cursor:'pointer',fontFamily:'inherit',letterSpacing:'.02em',boxShadow:`0 6px 22px ${accent}44`,transition:'opacity .15s,transform .1s' }}
+            onMouseEnter={e=>e.currentTarget.style.opacity='.87'}
+            onMouseLeave={e=>e.currentTarget.style.opacity='1'}
+            onMouseDown={e=>e.currentTarget.style.transform='scale(.97)'}
+            onMouseUp={e=>e.currentTarget.style.transform='scale(1)'}
+          >{cta} →</button>
+          {badge && <span style={{ fontSize:10,color:'rgba(255,255,255,.45)',fontWeight:600 }}><span style={{ color:accent }}>★</span> {badge}</span>}
+        </div>
+      </div>
+
+      {/* RIGHT — visual */}
+      <div style={{ flex:'0 0 46%',position:'relative',zIndex:2,overflow:'hidden' }}>
+        {brandVisual(ad)}
+      </div>
+    </div>
+  );
+}
+
+function AdvertisementPlaceholder({ width, height }) {
+  return (
+    <div style={{ width:'100%', maxWidth:width, height, margin:'0 auto', background:'#fff', border:'1px dashed #d1d5db', borderRadius:4, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:8 }}>
+      <span style={{ fontSize:10, fontWeight:700, color:'#9ca3af', letterSpacing:'.18em', textTransform:'uppercase' }}>Publicidad</span>
+      <span style={{ fontSize:11, color:'#d1d5db' }}>{width} × {height} px</span>
+    </div>
+  );
+}
+
+function NewsCardSkeleton({ variant='medium' }) {
+  const imgH = variant === 'large' ? 280 : variant === 'medium' ? 160 : 80;
+  return (
+    <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:4, overflow:'hidden', height:'100%' }}>
+      <div style={{ height:imgH, background:'linear-gradient(90deg,var(--surface-2) 25%,var(--border-lt) 50%,var(--surface-2) 75%)', backgroundSize:'200% 100%', animation:'shimmer 1.6s linear infinite' }} />
+      <div style={{ padding:14 }}>
+        <div style={{ height:8, width:'28%', background:'var(--border)', borderRadius:2, marginBottom:10 }} />
+        <div style={{ height:13, width:'92%', background:'var(--border)', borderRadius:2, marginBottom:6 }} />
+        <div style={{ height:13, width:'68%', background:'var(--border)', borderRadius:2, marginBottom:12 }} />
+        <div style={{ height:9, width:'35%', background:'var(--border-lt)', borderRadius:2 }} />
+      </div>
+    </div>
+  );
+}
+
+function NewsCardLarge({ item }) {
+  const cat = inferCategory(item.title);
+  const [hov, setHov] = useState(false);
+  return (
+    <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ textDecoration:'none', display:'block', height:'100%' }}>
+      <div
+        onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+        style={{
+          background:'var(--surface)', border:'1px solid var(--border)', borderRadius:4,
+          overflow:'hidden', height:'100%', display:'flex', flexDirection:'column',
+          transition:'box-shadow .2s,transform .2s',
+          boxShadow: hov ? '0 12px 36px rgba(0,0,0,.12)' : 'none',
+          transform: hov ? 'translateY(-3px)' : 'none',
+        }}
+      >
+        <div style={{ position:'relative', height:280, overflow:'hidden', flexShrink:0, background:'linear-gradient(135deg,#44685c,#2d4a40)' }}>
+          {item.image && (
+            <img src={item.image} alt="" loading="lazy"
+              style={{ width:'100%', height:'100%', objectFit:'cover', display:'block', transition:'transform .4s', transform: hov ? 'scale(1.04)' : 'scale(1)' }}
+              onError={e => { e.target.style.display='none'; }}
+            />
+          )}
+          <span style={{ position:'absolute', top:12, left:12, fontSize:10, fontWeight:800, letterSpacing:'.10em', padding:'4px 10px', borderRadius:2, background:cat.color, color:'#fff', textTransform:'uppercase' }}>{cat.label}</span>
+        </div>
+        <div style={{ padding:'18px 18px 16px', flex:1, display:'flex', flexDirection:'column' }}>
+          <h3 style={{ fontSize:18, fontWeight:800, color:'var(--txt-1)', lineHeight:1.35, margin:'0 0 10px', flex:1, letterSpacing:'-.2px' }}>{item.title}</h3>
+          {item.desc && <p style={{ fontSize:13, color:'var(--txt-2)', lineHeight:1.6, margin:'0 0 14px' }}>{item.desc}</p>}
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', paddingTop:12, borderTop:'1px solid var(--border-lt)' }}>
+            <span style={{ fontSize:11, fontWeight:700, color:'#44685c' }}>lanacion.com.ar</span>
+            {item.dateStr && <span style={{ fontSize:11, color:'var(--txt-3)', fontWeight:500 }}>{item.dateStr}</span>}
+          </div>
+        </div>
+      </div>
+    </a>
+  );
+}
+
+function NewsCardMedium({ item }) {
+  const cat = inferCategory(item.title);
+  const [hov, setHov] = useState(false);
+  return (
+    <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ textDecoration:'none', display:'block', height:'100%' }}>
+      <div
+        onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+        style={{
+          background:'var(--surface)', border:'1px solid var(--border)', borderRadius:4,
+          overflow:'hidden', height:'100%', display:'flex', flexDirection:'column',
+          transition:'box-shadow .2s,transform .2s',
+          boxShadow: hov ? '0 8px 24px rgba(0,0,0,.10)' : 'none',
+          transform: hov ? 'translateY(-2px)' : 'none',
+        }}
+      >
+        <div style={{ position:'relative', height:160, overflow:'hidden', flexShrink:0, background:'linear-gradient(135deg,#44685c,#2d4a40)' }}>
+          {item.image && (
+            <img src={item.image} alt="" loading="lazy"
+              style={{ width:'100%', height:'100%', objectFit:'cover', display:'block', transition:'transform .4s', transform: hov ? 'scale(1.05)' : 'scale(1)' }}
+              onError={e => { e.target.style.display='none'; }}
+            />
+          )}
+          <span style={{ position:'absolute', top:8, left:8, fontSize:9, fontWeight:800, letterSpacing:'.10em', padding:'3px 8px', borderRadius:2, background:cat.color, color:'#fff', textTransform:'uppercase' }}>{cat.label}</span>
+        </div>
+        <div style={{ padding:'12px 14px 12px', flex:1, display:'flex', flexDirection:'column' }}>
+          <h4 style={{ fontSize:14, fontWeight:700, color:'var(--txt-1)', lineHeight:1.4, margin:'0 0 8px', flex:1 }}>{item.title}</h4>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', paddingTop:8, borderTop:'1px solid var(--border-lt)' }}>
+            <span style={{ fontSize:10, fontWeight:700, color:'#44685c' }}>lanacion.com.ar</span>
+            {item.dateStr && <span style={{ fontSize:10, color:'var(--txt-3)' }}>{item.dateStr}</span>}
+          </div>
+        </div>
+      </div>
+    </a>
+  );
+}
+
+function NewsCardSmall({ item }) {
+  const cat = inferCategory(item.title);
+  const [hov, setHov] = useState(false);
+  return (
+    <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ textDecoration:'none', display:'block', height:'100%' }}>
+      <div
+        onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+        style={{
+          background:'var(--surface)', border:'1px solid var(--border)', borderRadius:4,
+          overflow:'hidden', height:'100%', display:'flex', flexDirection:'row',
+          transition:'box-shadow .2s,transform .2s',
+          boxShadow: hov ? '0 4px 16px rgba(0,0,0,.08)' : 'none',
+          transform: hov ? 'translateY(-1px)' : 'none',
+        }}
+      >
+        <div style={{ width:90, flexShrink:0, background:'linear-gradient(135deg,#44685c,#2d4a40)', position:'relative', overflow:'hidden' }}>
+          {item.image && (
+            <img src={item.image} alt="" loading="lazy"
+              style={{ width:'100%', height:'100%', objectFit:'cover', display:'block', position:'absolute', inset:0 }}
+              onError={e => { e.target.style.display='none'; }}
+            />
+          )}
+        </div>
+        <div style={{ padding:'10px 12px', flex:1, display:'flex', flexDirection:'column', justifyContent:'space-between', minWidth:0 }}>
+          <div>
+            <span style={{ display:'inline-block', fontSize:8, fontWeight:800, letterSpacing:'.10em', padding:'2px 6px', borderRadius:2, background:cat.color, color:'#fff', textTransform:'uppercase', marginBottom:5 }}>{cat.label}</span>
+            <h5 style={{ fontSize:12, fontWeight:700, color:'var(--txt-1)', lineHeight:1.4, margin:0, overflow:'hidden', display:'-webkit-box', WebkitLineClamp:3, WebkitBoxOrient:'vertical' }}>{item.title}</h5>
+          </div>
+          {item.dateStr && <span style={{ fontSize:10, color:'var(--txt-3)', marginTop:6, display:'block' }}>{item.dateStr}</span>}
+        </div>
+      </div>
+    </a>
+  );
+}
+
+function CotizacionesWidget({ dolares, onNavDolar }) {
+  const ww = useWindowWidth();
+  const isMob = ww < 640;
+  const fmt = v => v != null ? Number(v).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—';
+
+  const usdRows = [
+    { label: 'Dólar Oficial',    d: dolares.oficial,   navKey: 'oficial'   },
+    { label: 'Dólar Blue',       d: dolares.blue,      navKey: 'blue'      },
+    { label: 'Dólar Mayorista',  d: dolares.mayorista, navKey: 'mayorista' },
+    { label: 'Dólar MEP',        d: dolares.mep,       navKey: 'mep'       },
+    { label: 'Contado con Liq.', d: dolares.ccl,       navKey: 'ccl'       },
+    { label: 'Dólar Tarjeta',    d: dolares.tarjeta,   navKey: 'tarjeta'   },
+    { label: 'Dólar Cripto',     d: dolares.cripto,    navKey: 'cripto'    },
+  ];
+  const otrasRows = [
+    { label: 'Euro',           d: dolares.euro,         navKey: null },
+    { label: 'Real Brasileño', d: dolares.real,         navKey: null },
+    { label: 'Peso Uruguayo',  d: dolares.pesoUruguayo, navKey: null },
+    { label: 'Peso Chileno',   d: dolares.pesoChileno,  navKey: null },
+  ];
+
+  const thStyle = { fontSize:10, fontWeight:700, color:'var(--txt-3)', letterSpacing:'.07em', textTransform:'uppercase', padding:'8px 12px', textAlign:'right', borderBottom:'2px solid var(--border)', whiteSpace:'nowrap' };
+  const thLabelStyle = { ...thStyle, textAlign:'left' };
+  const tdStyle = { fontSize:13, fontWeight:500, color:'var(--txt-1)', padding:'9px 12px', textAlign:'right', borderBottom:'1px solid var(--border-lt)', transition:'background .12s' };
+  const tdLabelStyle = { ...tdStyle, textAlign:'left', fontWeight:400, color:'#44685c' };
+
+  const Table = ({ rows, labelCol }) => (
+    <table style={{ width:'100%', borderCollapse:'collapse' }}>
+      <thead>
+        <tr>
+          <th style={thLabelStyle}>{labelCol}</th>
+          <th style={thStyle}>Compra</th>
+          <th style={thStyle}>Venta</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map(({ label, d, navKey }) => {
+          const clickable = !!onNavDolar;
+          return (
+            <tr
+              key={label}
+              onClick={() => onNavDolar && onNavDolar(navKey)}
+              style={{ cursor: clickable ? 'pointer' : 'default' }}
+              onMouseEnter={e => { if (clickable) e.currentTarget.style.background = 'var(--hover-bg)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = ''; }}
+            >
+              <td style={tdLabelStyle}>
+                {label}
+                {clickable && (
+                  <svg style={{ marginLeft:5, verticalAlign:'middle', opacity:.4 }} width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                )}
+              </td>
+              <td style={tdStyle}>{fmt(d?.compra)}</td>
+              <td style={{ ...tdStyle, fontWeight:600, color: d?.venta ? 'var(--txt-1)' : 'var(--txt-3)' }}>{fmt(d?.venta)}</td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+
+  const allNull = usdRows.every(r => !r.d);
+
+  return (
+    <div style={{
+      background:'var(--surface)', border:'1px solid var(--border)',
+      borderRadius:4, overflow:'hidden', marginBottom:32,
+    }}>
+      {/* Header */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 16px 0', borderBottom:'1px solid var(--border)', flexWrap:'wrap', gap:8 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          <div style={{ width:3, height:20, background:'#44685c', borderRadius:2 }} />
+          <span style={{ fontSize:13, fontWeight:800, color:'var(--txt-1)', letterSpacing:'.04em', textTransform:'uppercase' }}>Cotizaciones</span>
+          {allNull && <span style={{ fontSize:10, color:'var(--txt-3)', fontWeight:500 }}>Cargando…</span>}
+        </div>
+        <span style={{ fontSize:10, color:'var(--txt-3)', paddingBottom:14 }}>
+          Fuente: dolarapi.com · En pesos argentinos (ARS)
+        </span>
+      </div>
+      {/* Tablas */}
+      {isMob ? (
+        <div>
+          <Table rows={usdRows} labelCol="Dólar" />
+          <div style={{ height:1, background:'var(--border)' }} />
+          <Table rows={otrasRows} labelCol="Moneda" />
+        </div>
+      ) : (
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1px 1fr', alignItems:'start' }}>
+          <div style={{ padding:'0 0 4px' }}>
+            <Table rows={usdRows} labelCol="Dólar" />
+          </div>
+          <div style={{ background:'var(--border)', alignSelf:'stretch' }} />
+          <div style={{ padding:'0 0 4px' }}>
+            <Table rows={otrasRows} labelCol="Moneda" />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const MOCK_NEWS_EDITORIAL = [
+  /* ── BLOQUE A (0–4) ── */
+  { title: 'Dólar MEP: cómo comprarlo sin límite desde el homebanking en 4 pasos', link: '#', image: 'https://picsum.photos/seed/shp01/800/450', dateStr: '30 may. 2026', desc: 'El dólar bolsa sigue siendo la vía legal más accesible para dolarizar ahorros. Guía actualizada para operar desde cualquier banco o broker habilitado.' },
+  { title: 'Bitcoin superó los US$ 110.000: qué proyectan los analistas para lo que sigue', link: '#', image: 'https://picsum.photos/seed/shp02/800/450', dateStr: '30 may. 2026', desc: 'La principal criptomoneda volvió a marcar máximos históricos. Los expertos debaten si el rally tiene fundamentos para sostenerse o si una corrección es inminente.' },
+  { title: 'Plazo fijo: el banco que paga la mayor tasa TNA esta semana', link: '#', image: 'https://picsum.photos/seed/shp03/800/450', dateStr: '29 may. 2026' },
+  { title: 'FCI money market superan al plazo fijo: cómo invertir desde $1.000', link: '#', image: 'https://picsum.photos/seed/shp04/800/450', dateStr: '29 may. 2026' },
+  { title: 'Mercado Pago y Ualá actualizaron sus tasas de cuenta remunerada', link: '#', image: 'https://picsum.photos/seed/shp05/800/450', dateStr: '29 may. 2026' },
+  /* ── BLOQUE B (5–9) ── */
+  { title: 'YPF y Shell ajustaron el precio de la nafta: cuánto cuesta el litro premium', link: '#', image: 'https://picsum.photos/seed/shp06/800/450', dateStr: '28 may. 2026', desc: 'Las principales petroleras alinearon sus cuadros tarifarios tras la actualización del mes. El súper corriente subió en promedio un 4,5% en estaciones del AMBA.' },
+  { title: 'BCRA mantuvo la tasa de política monetaria: qué implica para los plazos fijos', link: '#', image: 'https://picsum.photos/seed/shp07/800/450', dateStr: '28 may. 2026' },
+  { title: 'Merval y acciones argentinas: cuáles lideraron las subas en la semana', link: '#', image: 'https://picsum.photos/seed/shp08/800/450', dateStr: '28 may. 2026' },
+  { title: 'SUBE: cómo recargar la tarjeta desde el celular sin ir al kiosco', link: '#', image: 'https://picsum.photos/seed/shp09/800/450', dateStr: '27 may. 2026' },
+  { title: 'Carrefour y Coto: los días de descuento con cada banco esta semana', link: '#', image: 'https://picsum.photos/seed/shp10/800/450', dateStr: '27 may. 2026' },
+  /* ── BLOQUE C (10–14) ── */
+  { title: 'CEDEARs más operados: cómo invertir en Apple, Google y Amazon desde Argentina', link: '#', image: 'https://picsum.photos/seed/shp11/800/450', dateStr: '27 may. 2026', desc: 'Los certificados de depósito argentinos permiten acceder a empresas del exterior en pesos. Un análisis de los 10 más elegidos por inversores minoristas.' },
+  { title: 'Dólar CCL vs MEP: diferencias clave, ventajas y cuándo conviene cada uno', link: '#', image: 'https://picsum.photos/seed/shp12/800/450', dateStr: '26 may. 2026' },
+  { title: 'Oro: el precio internacional marcó nuevos máximos y analistas ven más suba', link: '#', image: 'https://picsum.photos/seed/shp13/800/450', dateStr: '26 may. 2026' },
+  { title: 'Ethereum y las altcoins con mayor retorno en el último mes', link: '#', image: 'https://picsum.photos/seed/shp14/800/450', dateStr: '26 may. 2026' },
+  { title: 'Cómo abrir una cuenta bancaria 100% digital en menos de 10 minutos', link: '#', image: 'https://picsum.photos/seed/shp15/800/450', dateStr: '25 may. 2026' },
+  /* ── BLOQUE D (15–19) ── */
+  { title: 'Aguinaldo 2026: plazo fijo, FCI o billetera virtual, cuál rinde más este mes', link: '#', image: 'https://picsum.photos/seed/shp16/800/450', dateStr: '25 may. 2026', desc: 'Con el cobro del SAC en junio, economistas recomiendan diversificar entre instrumentos según el monto disponible y el horizonte de inversión.' },
+  { title: 'Dólar blue: nuevo máximo histórico encendió las alertas de los analistas cambiarios', link: '#', image: 'https://picsum.photos/seed/shp17/800/450', dateStr: '25 may. 2026' },
+  { title: 'Peajes: TelePASE y las tarjetas que dan descuento en autopistas del AMBA', link: '#', image: 'https://picsum.photos/seed/shp18/800/450', dateStr: '24 may. 2026' },
+  { title: 'Descuentos en supermercados: la guía completa por banco y tarjeta de mayo', link: '#', image: 'https://picsum.photos/seed/shp19/800/450', dateStr: '24 may. 2026' },
+  { title: 'Ualá lanzó cuenta remunerada que rivaliza directamente con los fondos money market', link: '#', image: 'https://picsum.photos/seed/shp20/800/450', dateStr: '24 may. 2026' },
+  /* ── BLOQUE E (20–24) ── */
+  { title: 'Acciones argentinas en Wall Street: cuáles ADRs subieron más esta semana', link: '#', image: 'https://picsum.photos/seed/shp21/800/450', dateStr: '23 may. 2026', desc: 'YPF, Grupo Financiero Galicia, MercadoLibre y Tenaris lideraron las subas entre los papeles nacionales que cotizan en la Bolsa de Nueva York.' },
+  { title: 'Cómo invertir en oro desde Argentina: opciones en pesos y en dólares', link: '#', image: 'https://picsum.photos/seed/shp22/800/450', dateStr: '23 may. 2026' },
+  { title: 'Billeteras virtuales: comparativa completa de tasas, límites y beneficios', link: '#', image: 'https://picsum.photos/seed/shp23/800/450', dateStr: '23 may. 2026' },
+  { title: 'BADLAR cayó por tercera semana consecutiva: impacto en plazos fijos', link: '#', image: 'https://picsum.photos/seed/shp24/800/450', dateStr: '22 may. 2026' },
+  { title: 'Movilidad eléctrica: qué beneficios dan los bancos para comprar autos eléctricos', link: '#', image: 'https://picsum.photos/seed/shp25/800/450', dateStr: '22 may. 2026' },
+  /* ── BLOQUE F (25–29) ── */
+  { title: 'Inversiones en CEDEARs: cuáles son los más seguros y los más volátiles del mercado', link: '#', image: 'https://picsum.photos/seed/shp26/800/450', dateStr: '22 may. 2026', desc: 'Los CEDEARs de empresas defensivas como Johnson & Johnson o Coca-Cola ofrecen menor volatilidad frente a los tecnológicos. Un análisis para distintos perfiles.' },
+  { title: 'Dólar oficial: el BCRA compró reservas por cuarto día consecutivo', link: '#', image: 'https://picsum.photos/seed/shp27/800/450', dateStr: '21 may. 2026' },
+  { title: 'Cómo funciona el reintegro de combustible con tarjeta de débito', link: '#', image: 'https://picsum.photos/seed/shp28/800/450', dateStr: '21 may. 2026' },
+  { title: 'Bancos digitales vs. tradicionales: cuál conviene para el día a día en 2026', link: '#', image: 'https://picsum.photos/seed/shp29/800/450', dateStr: '21 may. 2026' },
+  { title: 'Bitcoin en Argentina: cómo declarar tus criptomonedas ante la AFIP este año', link: '#', image: 'https://picsum.photos/seed/shp30/800/450', dateStr: '20 may. 2026' },
+];
+
+function NewsEditorialSection({ noticias, noticiasLoad, dolares, onNavDolar }) {
+  const ww = useWindowWidth();
+  const isMob = ww < 600;
+  const isTab = ww >= 600 && ww < 960;
+
+  const realItems = noticias && noticias.length > 0 ? noticias : [];
+  const loading   = noticiasLoad && realItems.length === 0;
+  const isMock    = !loading && realItems.length === 0;
+  const items     = isMock ? MOCK_NEWS_EDITORIAL : realItems;
+  const get       = i => items[i] || null;
+
+  const colsHero    = isMob ? '1fr' : isTab ? '1fr' : '2fr 1fr';
+  const colsHeroRev = isMob ? '1fr' : isTab ? '1fr' : '1fr 2fr';
+  const colsPair    = isMob ? '1fr' : '1fr 1fr';
+  const rowsStack   = isMob ? 'auto auto' : '1fr 1fr';
+
+  /* Renderiza un bloque de 5 noticias: 1 large + 2 medium apiladas + 2 small */
+  const Block = ({ offset, flip }) => {
+    const heroGrid = flip ? colsHeroRev : colsHero;
+    const large    = get(offset);
+    const med1     = get(offset + 1);
+    const med2     = get(offset + 2);
+    const sm1      = get(offset + 3);
+    const sm2      = get(offset + 4);
+    if (!large && !med1) return null;
+    return (
+      <div style={{ marginBottom:16 }}>
+        <div style={{ display:'grid', gridTemplateColumns:heroGrid, gap:16, marginBottom:14 }}>
+          {flip ? (
+            <>
+              <div style={{ display:'grid', gridTemplateRows:rowsStack, gap:16 }}>
+                {med1 && <NewsCardMedium item={med1} />}
+                {med2 && <NewsCardMedium item={med2} />}
+              </div>
+              {large && <NewsCardLarge item={large} />}
+            </>
+          ) : (
+            <>
+              {large && <NewsCardLarge item={large} />}
+              <div style={{ display:'grid', gridTemplateRows:rowsStack, gap:16 }}>
+                {med1 && <NewsCardMedium item={med1} />}
+                {med2 && <NewsCardMedium item={med2} />}
+              </div>
+            </>
+          )}
+        </div>
+        {(sm1 || sm2) && (
+          <div style={{ display:'grid', gridTemplateColumns:colsPair, gap:12 }}>
+            {sm1 && <NewsCardSmall item={sm1} />}
+            {sm2 && <NewsCardSmall item={sm2} />}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const SkeletonBlock = () => (
+    <div style={{ marginBottom:16 }}>
+      <div style={{ display:'grid', gridTemplateColumns:colsHero, gap:16, marginBottom:14 }}>
+        <NewsCardSkeleton variant="large" />
+        <div style={{ display:'grid', gridTemplateRows:rowsStack, gap:16 }}>
+          <NewsCardSkeleton variant="medium" />
+          <NewsCardSkeleton variant="medium" />
+        </div>
+      </div>
+      <div style={{ display:'grid', gridTemplateColumns:colsPair, gap:12 }}>
+        <NewsCardSkeleton variant="small" />
+        <NewsCardSkeleton variant="small" />
+      </div>
+    </div>
+  );
+
+  const AdRow = ({ adId }) => (
+    <div style={{ margin:'32px 0' }}>
+      <AdBanner adId={adId} />
+    </div>
+  );
+
+  return (
+    <section
+      aria-label="Más información para ahorrar e invertir"
+      style={{ background:'var(--bg)', paddingTop:52, paddingBottom:12 }}
+    >
+      <div style={{ maxWidth:1300, margin:'0 auto', padding:'0 20px' }}>
+
+        {/* Cabecera editorial */}
+        <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', marginBottom:32, flexWrap:'wrap', gap:14 }}>
+          <div>
+            <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:6 }}>
+              <div style={{ width:4, height:28, background:'#44685c', borderRadius:2, flexShrink:0 }} />
+              <h2 style={{ fontSize: isMob ? 18 : 24, fontWeight:900, color:'var(--txt-1)', margin:0, letterSpacing:'-.4px', lineHeight:1.15 }}>
+                Más información para ahorrar e invertir
+              </h2>
+            </div>
+            <p style={{ fontSize:12, color:'var(--txt-3)', margin:'0 0 0 14px' }}>
+              Economía · Mercados · Inversiones · actualización automática
+            </p>
+          </div>
+        </div>
+
+        {/* ══════════════════════════════════
+            BLOQUE A — ítems 0-4  (5 noticias)
+        ══════════════════════════════════ */}
+        {loading ? <SkeletonBlock /> : <Block offset={0} flip={false} />}
+
+        {/* PUBLICIDAD 970×250 */}
+        <AdRow adId="cocos" />
+
+        {/* ══════════════════════════════════
+            BLOQUE B — ítems 5-9  (5 noticias)
+        ══════════════════════════════════ */}
+        {!loading && items.length >= 6 && <Block offset={5} flip={true} />}
+
+        {/* COTIZACIONES — entre Bloque B y publicidad */}
+        {!loading && <CotizacionesWidget dolares={dolares || {}} onNavDolar={onNavDolar} />}
+
+        {!loading && items.length >= 6 && <AdRow adId="balanz" />}
+
+        {/* ══════════════════════════════════
+            BLOQUE C — ítems 10-14 (5 noticias)
+        ══════════════════════════════════ */}
+        {!loading && items.length >= 11 && <Block offset={10} flip={false} />}
+
+        {!loading && items.length >= 11 && <AdRow adId="iol" />}
+
+        {/* ══════════════════════════════════
+            BLOQUE D — ítems 15-19 (5 noticias)
+        ══════════════════════════════════ */}
+        {!loading && items.length >= 16 && <Block offset={15} flip={true} />}
+
+        {!loading && items.length >= 21 && <AdRow adId="lemon" />}
+
+        {/* ══════════════════════════════════
+            BLOQUE E — ítems 20-24 (5 noticias)
+        ══════════════════════════════════ */}
+        {!loading && items.length >= 21 && <Block offset={20} flip={false} />}
+
+        {!loading && items.length >= 26 && <AdRow adId="belo" />}
+
+        {/* ══════════════════════════════════
+            BLOQUE F — ítems 25-29 (5 noticias)
+        ══════════════════════════════════ */}
+        {!loading && items.length >= 26 && <Block offset={25} flip={true} />}
+
+        {/* Nota de fuente */}
+        <div style={{ marginTop:28, paddingTop:14, borderTop:'1px solid var(--border-lt)', display:'flex', alignItems:'center', gap:8 }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--txt-3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
+          </svg>
+          <p style={{ fontSize:11, color:'var(--txt-3)', margin:0 }}>
+            {isMock
+              ? 'Contenido de ejemplo · Las noticias reales cargan automáticamente desde La Nación Economía.'
+              : 'Contenido extraído de lanacion.com.ar/economia · Se actualiza cada 6 horas.'
+            }
+          </p>
+        </div>
+
+      </div>
+    </section>
+  );
+}
+
 function App() {
   const [showSplash,    setShowSplash]    = useState(true);
   const [splashExiting, setSplashExiting] = useState(false);
@@ -2438,7 +3454,7 @@ function App() {
   const [simItem,     setSimItem]     = useState(null);
   const [arsData,     setArsData]     = useState({ items:[], badlar:null, sourceLabel:'' });
   const [usdData,     setUsdData]     = useState({ items:[], sourceLabel:'' });
-  const [dolares,     setDolares]     = useState({ blue:null, oficial:null, mep:null, ccl:null, tarjeta:null, mayorista:null, cripto:null });
+  const [dolares,     setDolares]     = useState({ blue:null, oficial:null, mep:null, ccl:null, tarjeta:null, mayorista:null, cripto:null, euro:null, real:null, pesoUruguayo:null, pesoChileno:null });
   const [fetchError,  setFetchError]  = useState(null);
   const [visibleCount,      setVisibleCount]      = useState(5);
   const [collapsing,        setCollapsing]        = useState(false);
@@ -2759,84 +3775,107 @@ function App() {
           <div style={{ position:'absolute', bottom:'-6%', right:'30%', width:'28vw', height:'28vw', borderRadius:'50%', background:'radial-gradient(circle, #44685c09 0%, transparent 70%)' }} />
         </div>
 
-        {/* ── Persona feliz de busto (SVG) ── */}
-        <div className="splash-person" style={{
-          position:'absolute', right:'-4%', bottom:0,
-          width:'clamp(320px,46vw,680px)',
-          pointerEvents:'none', userSelect:'none',
-        }}>
-          <svg viewBox="0 0 400 500" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width:'100%', height:'100%' }}>
+        {/* ── Persona splash (PNG con fondo transparente) ── */}
+        <img
+          src="/persona-splash.png"
+          alt=""
+          className="splash-person"
+          style={{
+            position:'absolute', right:'5%', bottom:0,
+            width:'clamp(203px,29vw,428px)',
+            height:'auto',
+            pointerEvents:'none', userSelect:'none',
+            display:'block',
+          }}
+        />
+        {/* SVG placeholder — eliminar luego de confirmar imagen */}
+        <div style={{ display:'none' }}>
+          <svg viewBox="0 0 400 680" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width:'100%', height:'100%' }}>
 
-            {/* ── Brazo izquierdo — levantado arriba ── */}
-            <path d="M118 320 Q72 250 34 170" stroke="#44685c" strokeWidth="36" strokeLinecap="round"/>
-            {/* Mano izquierda */}
-            <circle cx="28" cy="155" r="28" fill="#44685c"/>
-            {/* Dedos izquierda */}
-            <circle cx="10"  cy="135" r="11" fill="#44685c"/>
-            <circle cx="30"  cy="127" r="11" fill="#44685c"/>
-            <circle cx="50"  cy="131" r="10" fill="#44685c"/>
+            {/* ── Sombra en el suelo ── */}
+            <ellipse cx="200" cy="669" rx="90" ry="13" fill="#44685c" fillOpacity=".15"/>
 
-            {/* ── Brazo derecho — levantado arriba ── */}
-            <path d="M282 320 Q328 250 366 170" stroke="#44685c" strokeWidth="36" strokeLinecap="round"/>
-            {/* Mano derecha */}
-            <circle cx="372" cy="155" r="28" fill="#44685c"/>
-            {/* Dedos derecha */}
-            <circle cx="390" cy="135" r="11" fill="#44685c"/>
-            <circle cx="370" cy="127" r="11" fill="#44685c"/>
-            <circle cx="350" cy="131" r="10" fill="#44685c"/>
+            {/* ── Zapatos ── */}
+            <ellipse cx="155" cy="648" rx="40" ry="18" fill="#1e293b"/>
+            <ellipse cx="248" cy="648" rx="40" ry="18" fill="#1e293b"/>
+            <ellipse cx="143" cy="642" rx="15" ry="5" fill="#fff" fillOpacity=".1"/>
+            <ellipse cx="236" cy="642" rx="15" ry="5" fill="#fff" fillOpacity=".1"/>
 
-            {/* ── Torso / pecho ── */}
-            <path d="M90 500 Q90 360 118 310 Q145 280 200 275 Q255 280 282 310 Q310 360 310 500Z" fill="#44685c"/>
+            {/* ── Piernas (pantalón) ── */}
+            <path d="M148 418 Q140 515 142 634" stroke="#2d4a40" strokeWidth="48" strokeLinecap="round"/>
+            <path d="M252 418 Q260 515 258 634" stroke="#2d4a40" strokeWidth="48" strokeLinecap="round"/>
+
+            {/* ── Cintura / cinturón ── */}
+            <path d="M132 408 Q200 424 268 408 L266 432 Q200 448 134 432Z" fill="#1a2e26"/>
+
+            {/* ── Torso (remera) ── */}
+            <path d="M110 224 Q96 285 98 400 Q200 425 302 400 Q304 285 290 224 Q250 213 200 217 Q150 213 110 224Z" fill="#44685c"/>
 
             {/* ── Hombros ── */}
-            <ellipse cx="105" cy="305" rx="38" ry="26" fill="#44685c"/>
-            <ellipse cx="295" cy="305" rx="38" ry="26" fill="#44685c"/>
+            <ellipse cx="104" cy="232" rx="46" ry="30" fill="#44685c"/>
+            <ellipse cx="296" cy="232" rx="46" ry="30" fill="#44685c"/>
+
+            {/* ── Brazo izquierdo — puño arriba (festejo) ── */}
+            <path d="M104 220 Q62 152 34 80" stroke="#44685c" strokeWidth="40" strokeLinecap="round"/>
+            <path d="M34 80 Q24 50 22 18" stroke="#44685c" strokeWidth="36" strokeLinecap="round"/>
+            {/* Puño */}
+            <rect x="4" y="2" width="50" height="40" rx="14" fill="#44685c"/>
+            <path d="M6 14 Q-2 6 4 -4 Q10 -12 20 -5" stroke="#44685c" strokeWidth="14" strokeLinecap="round" fill="none"/>
+
+            {/* ── Brazo derecho — sosteniendo celular ── */}
+            <path d="M296 220 Q332 282 346 342" stroke="#44685c" strokeWidth="40" strokeLinecap="round"/>
+
+            {/* ── Celular ── */}
+            <rect x="324" y="336" width="52" height="86" rx="12" fill="#0f172a"/>
+            <rect x="328" y="341" width="44" height="74" rx="9" fill="#38bdf8" fillOpacity=".85"/>
+            <rect x="332" y="346" width="19" height="27" rx="3" fill="#fff" fillOpacity=".38"/>
+            <rect x="332" y="378" width="36" height="6" rx="2" fill="#fff" fillOpacity=".2"/>
+            <rect x="332" y="388" width="26" height="6" rx="2" fill="#fff" fillOpacity=".2"/>
+            <circle cx="350" cy="339" r="4" fill="#1e293b"/>
 
             {/* ── Cuello ── */}
-            <path d="M172 255 Q172 230 200 225 Q228 230 228 255 L228 290 Q228 305 200 308 Q172 305 172 290Z" fill="#44685c" fillOpacity=".85"/>
+            <path d="M177 200 Q177 218 200 221 Q223 218 223 200 L223 234 Q223 247 200 250 Q177 247 177 234Z" fill="#3d6b5c" fillOpacity=".9"/>
 
             {/* ── Cabeza ── */}
-            <ellipse cx="200" cy="168" rx="80" ry="86" fill="#44685c" fillOpacity=".92"/>
+            <ellipse cx="200" cy="118" rx="84" ry="90" fill="#44685c" fillOpacity=".92"/>
 
             {/* ── Cara ── */}
-            <ellipse cx="200" cy="172" rx="60" ry="64" fill="#f0fdf4"/>
+            <ellipse cx="200" cy="122" rx="64" ry="68" fill="#f0fdf4"/>
 
-            {/* ── Cejas ── */}
-            <path d="M168 148 Q178 143 188 148" stroke="#44685c" strokeWidth="4" strokeLinecap="round" fill="none"/>
-            <path d="M212 148 Q222 143 232 148" stroke="#44685c" strokeWidth="4" strokeLinecap="round" fill="none"/>
+            {/* ── Cejas levantadas (emoción) ── */}
+            <path d="M163 93 Q178 83 193 91" stroke="#44685c" strokeWidth="5" strokeLinecap="round" fill="none"/>
+            <path d="M207 91 Q222 83 237 93" stroke="#44685c" strokeWidth="5" strokeLinecap="round" fill="none"/>
 
-            {/* ── Ojos ── */}
-            <ellipse cx="182" cy="165" rx="10" ry="12" fill="#44685c"/>
-            <ellipse cx="218" cy="165" rx="10" ry="12" fill="#44685c"/>
-            {/* Brillo */}
-            <circle cx="186" cy="161" r="4" fill="#fff"/>
-            <circle cx="222" cy="161" r="4" fill="#fff"/>
-            {/* Pestañas */}
-            <path d="M172 160 Q178 155 185 160" stroke="#44685c" strokeWidth="2" strokeLinecap="round" fill="none"/>
-            <path d="M215 160 Q222 155 228 160" stroke="#44685c" strokeWidth="2" strokeLinecap="round" fill="none"/>
+            {/* ── Ojos — guiño izquierdo, derecho abierto ── */}
+            <path d="M167 115 Q180 106 194 115" stroke="#44685c" strokeWidth="5.5" strokeLinecap="round" fill="none"/>
+            <ellipse cx="220" cy="115" rx="12" ry="14" fill="#44685c"/>
+            <circle cx="225" cy="110" r="5" fill="#fff"/>
 
             {/* ── Nariz ── */}
-            <path d="M196 178 Q200 186 204 178" stroke="#44685c" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+            <path d="M196 137 Q200 145 204 137" stroke="#44685c" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
 
-            {/* ── Sonrisa ── */}
-            <path d="M176 196 Q200 218 224 196" stroke="#44685c" strokeWidth="5" strokeLinecap="round" fill="none"/>
-            {/* Cachetes */}
-            <ellipse cx="168" cy="198" rx="12" ry="8" fill="#44685c" fillOpacity=".15"/>
-            <ellipse cx="232" cy="198" rx="12" ry="8" fill="#44685c" fillOpacity=".15"/>
+            {/* ── Boca abierta (gritando de alegría) ── */}
+            <path d="M172 158 Q200 182 228 158" stroke="#44685c" strokeWidth="6" strokeLinecap="round" fill="none"/>
+            <ellipse cx="200" cy="167" rx="22" ry="12" fill="#44685c" fillOpacity=".14"/>
+
+            {/* ── Cachetes ── */}
+            <ellipse cx="161" cy="155" rx="15" ry="9" fill="#44685c" fillOpacity=".12"/>
+            <ellipse cx="239" cy="155" rx="15" ry="9" fill="#44685c" fillOpacity=".12"/>
 
             {/* ── Pelo ── */}
-            <path d="M125 130 Q130 70 200 62 Q270 70 275 130 Q268 98 200 92 Q132 98 125 130Z" fill="#2d4a40"/>
-            <path d="M126 135 Q118 155 122 175 Q128 145 126 135Z" fill="#2d4a40"/>
-            <path d="M274 135 Q282 155 278 175 Q272 145 274 135Z" fill="#2d4a40"/>
+            <path d="M119 86 Q125 20 200 12 Q275 20 281 86 Q273 50 200 43 Q127 50 119 86Z" fill="#2d4a40"/>
+            <path d="M118 90 Q108 114 113 138 Q120 110 118 90Z" fill="#2d4a40"/>
+            <path d="M282 90 Q292 114 287 138 Q280 110 282 90Z" fill="#2d4a40"/>
+            {/* Barba sutil */}
+            <path d="M175 167 Q200 186 225 167 Q225 183 200 190 Q175 183 175 167Z" fill="#2d4a40" fillOpacity=".11"/>
 
-            {/* ── Destellos ── */}
-            <g fill="#44685c" opacity=".35">
-              <path d="M42 80  l5 16 l5-16 l-16 5 l16 5z"/>
-              <path d="M355 65 l4 12 l4-12 l-12 4 l12 4z"/>
-              <path d="M78 40  l3  8  l3  -8  l-8  3  l8  3z"/>
-              <path d="M335 42 l3  8  l3  -8  l-8  3  l8  3z"/>
-              <path d="M18 220 l3  8  l3  -8  l-8  3  l8  3z"/>
-              <path d="M385 200 l3 8  l3  -8  l-8  3  l8  3z"/>
+            {/* ── Destellos celebración ── */}
+            <g fill="#44685c" opacity=".32">
+              <path d="M48 56  l4 14 l4-14 l-14 4 l14 4z"/>
+              <path d="M364 42 l3 10 l3-10 l-10 3 l10 3z"/>
+              <path d="M80 28  l3  8  l3  -8  l-8  3  l8  3z"/>
+              <path d="M350 30 l3  8  l3  -8  l-8  3  l8  3z"/>
+              <path d="M20 195 l3  8  l3  -8  l-8  3  l8  3z"/>
             </g>
           </svg>
         </div>
@@ -4562,71 +5601,7 @@ function App() {
 
                 {/* ── Grid de noticias ── */}
                 {noticias.length > 0 && (
-                  <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2,1fr)', gap:16 }}>
-                    {noticias.map((n, i) => (
-                      <a key={i} href={n.link} target="_blank" rel="noopener noreferrer" style={{ textDecoration:'none', display:'block' }}>
-                        <div
-                          style={{
-                            background:'var(--surface)', border:'1px solid var(--border)', borderRadius:4,
-                            overflow:'hidden', height:'100%', display:'flex', flexDirection:'column',
-                            transition:'box-shadow .2s, transform .2s',
-                          }}
-                          onMouseEnter={e => { e.currentTarget.style.boxShadow='0 8px 28px var(--shadow-md)'; e.currentTarget.style.transform='translateY(-2px)'; }}
-                          onMouseLeave={e => { e.currentTarget.style.boxShadow='none'; e.currentTarget.style.transform='none'; }}
-                        >
-                          {/* Imagen */}
-                          {n.image ? (
-                            <div style={{ position:'relative', height:180, overflow:'hidden', flexShrink:0 }}>
-                              <img
-                                src={n.image} alt=""
-                                style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}
-                                onError={e => { e.target.style.display='none'; e.target.parentNode.style.background='linear-gradient(135deg,#44685c,#2d4a40)'; }}
-                              />
-                            </div>
-                          ) : (
-                            <div style={{ height:120, background:'linear-gradient(135deg,#44685c 0%,#2d4a40 100%)', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
-                              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/>
-                                <path d="M18 14h-8M15 18h-5M10 6h8v4h-8z"/>
-                              </svg>
-                            </div>
-                          )}
-
-                          {/* Contenido */}
-                          <div style={{ padding:'16px', flex:1, display:'flex', flexDirection:'column' }}>
-                            {n.dateStr && (
-                              <div style={{ fontSize:10, fontWeight:600, color:'var(--txt-3)', letterSpacing:'.04em', textTransform:'uppercase', marginBottom:8 }}>
-                                {n.dateStr}
-                              </div>
-                            )}
-                            <div style={{ fontSize:14, fontWeight:700, color:'var(--txt-1)', lineHeight:1.45, marginBottom:8, flex:1 }}>
-                              {n.title}
-                            </div>
-                            {n.desc && (
-                              <p style={{ fontSize:12, color:'var(--txt-2)', lineHeight:1.6, margin:'0 0 14px' }}>
-                                {n.desc}
-                              </p>
-                            )}
-                            {/* Footer */}
-                            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', paddingTop:10, borderTop:'1px solid var(--border-lt)' }}>
-                              <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:11, fontWeight:700, color:'#44685c' }}>
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#44685c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                  <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                                </svg>
-                                lanacion.com.ar
-                              </div>
-                              <div style={{ display:'flex', alignItems:'center', gap:4, fontSize:11, color:'var(--txt-3)', fontWeight:600 }}>
-                                Leer nota
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M7 17L17 7M7 7h10v10"/>
-                                </svg>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </a>
-                    ))}
-                  </div>
+                  <ExpandableNewsGrid noticias={noticias} isMobile={isMobile} />
                 )}
 
                 {/* ── Fuente ── */}
@@ -4642,6 +5617,9 @@ function App() {
                     </p>
                   </div>
                 )}
+
+                {/* ── Carrusel destacado + ads Lemon / Belo ── */}
+                <FeaturedCarousel />
 
               </div>
             )}
@@ -4745,7 +5723,7 @@ function App() {
                     </div>
 
                     {filtered.map(([name], i, arr) => {
-                      const arsItem = arsData.items.find(p => p.app === name) || ARS_PROFILES.find(p => p.app === name);
+                      const arsItem = arsData.items.find(p => p.app === name);
                       const usdItem = usdData.items.find(p => p.app === name) || USD_PROFILES.find(p => p.app === name);
                       const types   = [arsItem?.type, usdItem?.type].filter(Boolean).map(tp => TYPE_LABEL[tp] || tp);
                       return (
@@ -6210,8 +7188,21 @@ function App() {
 
         </div>
 
-        {/* ═══ BANNER PUBLICIDAD — oculto hasta tener contenido real ═══ */}
       </div>
+
+      {/* ═══════════════════════════════════════════════════
+          SECCIÓN EDITORIAL
+      ═══════════════════════════════════════════════════ */}
+      <NewsEditorialSection
+        noticias={noticias}
+        noticiasLoad={noticiasLoad}
+        dolares={dolares}
+        onNavDolar={(key) => {
+          handleTab('dolares');
+          if (key) { setDolView('detail'); setDolDetail(key); }
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+      />
 
       {/* ═══════════════════════════════════════════════════
           FOOTER

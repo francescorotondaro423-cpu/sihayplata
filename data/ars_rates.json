@@ -1,6 +1,6 @@
 {
-  "sourceLabel": "HTTP Fetch (comparadores web) · BADLAR 20.69% · 2026-05-29",
-  "lastScraperRun": "2026-05-29T06:00:00.106Z",
+  "sourceLabel": "HTTP Fetch (comparadores web) · BADLAR 21.94% · 2026-06-01",
+  "lastScraperRun": "2026-06-01T06:00:00.137Z",
   "scraperStatus": {
     "Lemon Cash": "ok (16.73% TNA)",
     "Prex": "ok (17.7% TNA)",
@@ -76,11 +76,11 @@
       "app": "IEB+",
       "type": "fci",
       "section": "variable",
-      "spread": -3.04,
+      "spread": -4.29,
       "promo": false,
       "limit": "Sin Límite",
       "info": "FCI Money Market T+0",
-      "lastUpdated": "2026-05-29",
+      "lastUpdated": "2026-06-01",
       "src": "http"
     },
     {
@@ -96,11 +96,11 @@
       "app": "Claro Pay",
       "type": "fci",
       "section": "variable",
-      "spread": -3.57,
+      "spread": -4.82,
       "promo": false,
       "limit": "Sin Límite",
       "info": "FCI Money Market T+0",
-      "lastUpdated": "2026-05-29",
+      "lastUpdated": "2026-06-01",
       "src": "http"
     },
     {
@@ -125,22 +125,22 @@
       "app": "Lemon Cash",
       "type": "fci",
       "section": "variable",
-      "spread": -3.96,
+      "spread": -5.21,
       "promo": false,
       "limit": "Sin Límite",
       "info": "FCI Lemon Ahorro T+0",
-      "lastUpdated": "2026-05-29",
+      "lastUpdated": "2026-06-01",
       "src": "http"
     },
     {
       "app": "N1U",
       "type": "fci",
       "section": "variable",
-      "spread": -4.59,
+      "spread": -5.84,
       "promo": false,
       "limit": "Sin Límite",
       "info": "FCI Money Market T+0",
-      "lastUpdated": "2026-05-29",
+      "lastUpdated": "2026-06-01",
       "src": "http"
     },
     {
@@ -165,11 +165,11 @@
       "app": "Prex",
       "type": "cuenta",
       "section": "variable",
-      "spread": -2.99,
+      "spread": -4.24,
       "promo": false,
       "limit": "Sin Límite",
       "info": "Cuenta remunerada diaria",
-      "lastUpdated": "2026-05-29",
+      "lastUpdated": "2026-06-01",
       "src": "http"
     },
     {

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "cocos",
+    "clicks": 4,
+    "impressions": 235,
+    "refCode": "SIHAYPLATA"
+  },
+  {
+    "id": "balanz",
+    "clicks": 0,
+    "impressions": 208,
+    "refCode": ""
+  },
+  {
+    "id": "iol",
+    "clicks": 3,
+    "impressions": 233,
+    "refCode": ""
+  },
+  {
+    "id": "lemon",
+    "clicks": 0,
+    "impressions": 29,
+    "refCode": ""
+  },
+  {
+    "id": "belo",
+    "clicks": 0,
+    "impressions": 27,
+    "refCode": ""
+  }
+]

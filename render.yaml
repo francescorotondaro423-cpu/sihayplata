@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: sihayplata
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/rates
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ADMIN_KEY
+        generateValue: true
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
