@@ -1,0 +1,37 @@
+{
+  "name": "SiHayPlata",
+  "short_name": "SiHayPlata",
+  "description": "Comparador de rendimientos financieros de Argentina. Tasas, FCI, plazo fijo y beneficios de billeteras digitales.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f1f5f9",
+  "theme_color": "#44685c",
+  "orientation": "portrait-primary",
+  "lang": "es-AR",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "categories": ["finance"],
+  "shortcuts": [
+    {
+      "name": "Rendimientos ARS",
+      "url": "/#ars",
+      "description": "Ver tasas en pesos"
+    },
+    {
+      "name": "Cotizaciones",
+      "url": "/#dolares",
+      "description": "Dólar blue, MEP, oficial"
+    }
+  ]
+}
