@@ -273,6 +273,32 @@
       padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px)) !important;
     }
 
+    /* ══ MOBILE BOTTOM NAV ══ */
+    .mobile-bottom-nav { display: none; }
+
+    @media (max-width: 767px) {
+      /* ocultar elementos reemplazados */
+      .ticker-wrap        { display: none !important; }
+      .secondary-nav-wrap { display: none !important; }
+      .featured-carousel  { display: none !important; }
+      .fresh-stats-banner { display: none !important; }
+
+      /* espacio para la barra inferior */
+      .app-root { padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+
+      /* bottom nav visible */
+      .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        z-index: 45;
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        box-shadow: 0 -2px 16px rgba(0,0,0,.10);
+      }
+    }
+
     /* ── fluid page wrapper ── */
     .page-wrap { padding-left: clamp(12px, 3vw, 24px); padding-right: clamp(12px, 3vw, 24px); }
 
@@ -2171,32 +2197,40 @@ function SectionBlock({ sec, secItems, isMobile, t, onSimulate, onNavigate }) {
         </span>
       </div>
 
-      {/* Tabla */}
-      <div ref={wrapRef} style={{ background:'#fff', border:'1px solid #e2e8f0', overflowX:'auto' }}>
-        <table style={{ width:'100%', borderCollapse:'collapse' }}>
-          <thead>
-            <tr style={{ borderBottom:'1px solid var(--border-lt)', background:'var(--surface-3)' }}>
-              {[t.colEntidad, !isMobile && t.colProducto, t.colTNA, ''].filter(Boolean).map((col, ci) => (
-                <th key={ci} style={{
-                  padding: isMobile ? '8px 8px' : '8px 12px',
-                  textAlign: (isMobile ? ci===1 : ci===2) ? 'right' : (isMobile ? ci===2 : ci===3) ? 'right' : 'left',
-                  fontSize:10, fontWeight:700, color:'#94a3b8',
-                  letterSpacing:'.07em', textTransform:'uppercase', whiteSpace:'nowrap',
-                }}>{col}</th>
+      {/* Lista/Tabla */}
+      <div ref={wrapRef} style={{ background:'var(--surface)', border:'1px solid #e2e8f0', overflowX: isMobile ? 'visible' : 'auto' }}>
+        {isMobile ? (
+          visibleItems.map((item, idx) => (
+            <RankCard key={item.app} item={item} rank={idx+1}
+              onSimulate={onSimulate} onNavigate={onNavigate}
+            />
+          ))
+        ) : (
+          <table style={{ width:'100%', borderCollapse:'collapse' }}>
+            <thead>
+              <tr style={{ borderBottom:'1px solid var(--border-lt)', background:'var(--surface-3)' }}>
+                {[t.colEntidad, t.colProducto, t.colTNA, ''].map((col, ci) => (
+                  <th key={ci} style={{
+                    padding:'8px 12px',
+                    textAlign: ci===2 ? 'right' : ci===3 ? 'right' : 'left',
+                    fontSize:10, fontWeight:700, color:'#94a3b8',
+                    letterSpacing:'.07em', textTransform:'uppercase', whiteSpace:'nowrap',
+                  }}>{col}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {visibleItems.map((item, idx) => (
+                <RankRow key={item.app} item={item} rank={idx+1}
+                  onSimulate={onSimulate} onHistorial={onNavigate} t={t}
+                  delay={expanded && !collapsing && idx >= TOP ? `${(idx - TOP) * 0.05}s` : `${idx * 0.04}s`}
+                  isNew={expanded && !collapsing && idx >= TOP}
+                  isExiting={false} isMobile={false}
+                />
               ))}
-            </tr>
-          </thead>
-          <tbody>
-            {visibleItems.map((item, idx) => (
-              <RankRow key={item.app} item={item} rank={idx+1}
-                onSimulate={onSimulate} onHistorial={onNavigate} t={t}
-                delay={expanded && !collapsing && idx >= TOP ? `${(idx - TOP) * 0.05}s` : `${idx * 0.04}s`}
-                isNew={expanded && !collapsing && idx >= TOP}
-                isExiting={false} isMobile={isMobile}
-              />
-            ))}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        )}
       </div>
 
       {/* Botón Ver más / Ver menos */}
@@ -3553,6 +3587,129 @@ function NewsEditorialSection({ noticias, noticiasLoad, dolares, onNavDolar }) {
   );
 }
 
+/* ═══════════════════════════════════════
+   RANK CARD — vista de lista para mobile
+═══════════════════════════════════════ */
+function RankCard({ item, rank, onSimulate, onNavigate }) {
+  const TYPE_LABEL = { cuenta:'Cta. Remunerada', fci:'FCI Money Market', plazo:'Plazo Fijo', crypto:'Crypto', on:'ON Corp.' };
+  const rankColor  = rank === 1 ? '#b45309' : rank <= 3 ? '#64748b' : '#94a3b8';
+  return (
+    <div style={{
+      display:'flex', alignItems:'center', gap:12,
+      padding:'12px 14px',
+      borderBottom:'1px solid var(--border-lt)',
+      background:'var(--surface)',
+    }}>
+      <span style={{ width:22, textAlign:'center', fontWeight:700, fontSize:13, color:rankColor, flexShrink:0 }}>{rank}</span>
+      <AppLogo app={item.app} size={34} />
+      <div style={{ flex:1, minWidth:0 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:5, marginBottom:2 }}>
+          <span style={{ fontWeight:700, fontSize:14, color:'var(--txt-1)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{item.app}</span>
+          {item.promo && <span style={{ fontSize:10, fontWeight:800, color:'#b45309', flexShrink:0 }}>PROMO</span>}
+        </div>
+        <span style={{ fontSize:11, color:'var(--txt-3)' }}>{TYPE_LABEL[item.type] || item.type}</span>
+      </div>
+      <div style={{ textAlign:'right', flexShrink:0 }}>
+        <div style={{ fontSize:22, fontWeight:900, color:'var(--txt-1)', letterSpacing:'-.5px', lineHeight:1 }}>{item.tna.toFixed(1)}%</div>
+        <div style={{ fontSize:10, color:'var(--txt-3)', marginTop:2 }}>TNA</div>
+      </div>
+      <button onClick={() => onSimulate(item)} aria-label="Simular"
+        style={{
+          width:38, height:38, borderRadius:8, flexShrink:0,
+          background:'var(--surface-2)', border:'1px solid var(--border)',
+          cursor:'pointer', fontSize:20, color:'#44685c',
+          display:'flex', alignItems:'center', justifyContent:'center',
+          fontFamily:'inherit',
+        }}>›</button>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════
+   MOBILE BOTTOM NAVIGATION
+═══════════════════════════════════════ */
+const BOTTOM_NAV_ITEMS = [
+  {
+    key:'ars', label:'Pesos',
+    icon: (active) => (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active?'#44685c':'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+      </svg>
+    ),
+  },
+  {
+    key:'usd', label:'USD',
+    icon: (active) => (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active?'#44685c':'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+      </svg>
+    ),
+  },
+  {
+    key:'beneficios', label:'Beneficios',
+    icon: (active) => (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active?'#44685c':'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+      </svg>
+    ),
+  },
+  {
+    key:'dolares', label:'Cotiz.',
+    icon: (active) => (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active?'#44685c':'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+      </svg>
+    ),
+  },
+  {
+    key:'noticias', label:'Noticias',
+    icon: (active) => (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active?'#44685c':'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6z"/>
+      </svg>
+    ),
+  },
+  {
+    key:'aplicaciones', label:'Apps',
+    icon: (active) => (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active?'#44685c':'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      </svg>
+    ),
+  },
+];
+
+const BENEFICIOS_KEYS_GLOBAL = ['supermercados','movilidad','combustibles','transporte'];
+
+function MobileBottomNav({ activeTab, onTab }) {
+  return (
+    <nav className="mobile-bottom-nav" aria-label="Navegación principal">
+      {BOTTOM_NAV_ITEMS.map(item => {
+        const active = activeTab === item.key
+          || (item.key === 'beneficios' && BENEFICIOS_KEYS_GLOBAL.includes(activeTab));
+        return (
+          <button key={item.key} onClick={() => onTab(item.key)}
+            aria-label={item.label}
+            style={{
+              flex:1, display:'flex', flexDirection:'column', alignItems:'center',
+              justifyContent:'center', padding:'8px 2px 6px',
+              background:'none', border:'none', cursor:'pointer',
+              gap:3, fontFamily:'inherit',
+              color: active ? '#44685c' : 'var(--txt-3)',
+              transition:'color .15s',
+              minHeight:56,
+            }}>
+            {item.icon(active)}
+            <span style={{ fontSize:10, fontWeight: active ? 700 : 500, letterSpacing:'.01em', lineHeight:1 }}>
+              {item.label}
+            </span>
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
 function App() {
   const [showSplash,    setShowSplash]    = useState(true);
   const [splashExiting, setSplashExiting] = useState(false);
@@ -4110,7 +4267,7 @@ function App() {
   ];
 
   return (
-    <div style={{ minHeight:'100vh', background:'var(--bg)', transition:'background .35s' }}>
+    <div className="app-root" style={{ minHeight:'100vh', background:'var(--bg)', transition:'background .35s' }}>
 
       {/* ════════ SIDE MENU ════════ */}
       {menuOpen && (
@@ -5044,8 +5201,8 @@ function App() {
         />
       ) : (<>
 
-      {/* ════════ SECONDARY NAV (no sticky, scrolls away) ════════ */}
-      <div style={{ background:'var(--surface)', borderBottom:'1px solid var(--border)', transition:'background .35s' }}>
+      {/* ════════ SECONDARY NAV (desktop only, reemplazada por bottom nav en mobile) ════════ */}
+      <div className="secondary-nav-wrap" style={{ background:'var(--surface)', borderBottom:'1px solid var(--border)', transition:'background .35s' }}>
         <div style={{ maxWidth:1300, margin:'0 auto', padding: isMobile ? '0 0 0 8px' : '0 20px' }}>
           <div className="nav-scroll" style={{ display:'flex', gap:0, borderBottom:'none' }}>
             <div style={{ display:'flex', gap:0, minWidth: isMobile ? 'max-content' : undefined, width: isMobile ? undefined : '100%' }}>
@@ -5084,8 +5241,26 @@ function App() {
         </div>
       </div>
 
+      {/* ════════ MOBILE QUICK STATS BAR (reemplaza ticker en mobile) ════════ */}
+      {isMobile && (
+        <div style={{ background:'#44685c', overflowX:'auto', display:'flex', scrollbarWidth:'none' }} className="nav-scroll">
+          {[
+            arsData.badlar != null && { label:'BADLAR', val:`${arsData.badlar.toFixed(1)}%` },
+            arsData.items[0] && { label:'Mejor TNA', val:`${arsData.items[0].tna.toFixed(1)}%` },
+            dolares.blue?.venta && { label:'Blue', val:`$${Math.round(dolares.blue.venta).toLocaleString('es-AR')}` },
+            dolares.oficial?.venta && { label:'Oficial', val:`$${Math.round(dolares.oficial.venta).toLocaleString('es-AR')}` },
+            dolares.mep?.venta && { label:'MEP', val:`$${Math.round(dolares.mep.venta).toLocaleString('es-AR')}` },
+          ].filter(Boolean).map((s, i) => (
+            <div key={i} style={{ display:'flex', alignItems:'center', gap:5, padding:'6px 14px', borderRight:'1px solid rgba(255,255,255,.15)', flexShrink:0, whiteSpace:'nowrap' }}>
+              <span style={{ fontSize:10, color:'rgba(255,255,255,.65)', fontWeight:600 }}>{s.label}</span>
+              <span style={{ fontSize:12, color:'#fff', fontWeight:800 }}>{s.val}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* ════════ PAGE BODY — 3 columnas ════════ */}
-      <div style={{ maxWidth:1300, margin: isMobile ? '16px auto 0' : '40px auto 0', padding:`0 ${isMobile?'12px':'20px'} calc(60px + env(safe-area-inset-bottom, 0px))` }}>
+      <div style={{ maxWidth:1300, margin: isMobile ? '12px auto 0' : '40px auto 0', padding:`0 ${isMobile?'12px':'20px'} calc(60px + env(safe-area-inset-bottom, 0px))` }}>
         <div className="page-grid" style={BENEFICIOS_KEYS.includes(activeTab) ? { gridTemplateColumns:'1fr 280px' } : {}}>
 
           {/* ── COL IZQUIERDA: DÓLAR BLUE — oculta en Beneficios ── */}
@@ -5234,9 +5409,9 @@ function App() {
               const sectionsToRender = filter === 'all' ? SECTION_META : SECTION_META.filter(s => s.key === filter);
               return (
                 <>
-                  {/* Banner de frescura de datos */}
+                  {/* Banner de frescura de datos (solo desktop) */}
                   {freshStats && freshStats.manual > 0 && (
-                    <div style={{
+                    <div className="fresh-stats-banner" style={{
                       display:'flex', alignItems:'center', gap:8, flexWrap:'wrap',
                       padding:'6px 12px', marginBottom:12,
                       background:'#fafafa', border:'1px solid #e2e8f0', borderRadius:4,
@@ -5785,8 +5960,8 @@ function App() {
                   </div>
                 )}
 
-                {/* ── Carrusel destacado + ads Lemon / Belo ── */}
-                <FeaturedCarousel />
+                {/* ── Carrusel destacado + ads Lemon / Belo (solo desktop) ── */}
+                <div className="featured-carousel"><FeaturedCarousel /></div>
 
               </div>
             )}
@@ -7498,6 +7673,17 @@ function App() {
         <SimModal item={simItem} currency={currency} onClose={() => setSimItem(null)} t={t} />
       )}
       </>)}
+
+      {/* ════════ MOBILE BOTTOM NAV ════════ */}
+      <MobileBottomNav
+        activeTab={activeTab}
+        onTab={key => {
+          if (currentPage.page !== 'home') navigate('home');
+          handleTab(key);
+          window.scrollTo({ top:0, behavior:'smooth' });
+        }}
+      />
+
     </div>
   );
 }
