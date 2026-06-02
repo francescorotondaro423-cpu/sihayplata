@@ -2188,11 +2188,11 @@ function SectionBlock({ sec, secItems, isMobile, t, onSimulate, onNavigate }) {
         borderTop:'1px solid #e2e8f0', borderRight:'1px solid #e2e8f0', borderBottom:'none',
         borderLeft:`3px solid ${sec.color}`,
       }}>
-        <div>
+        <div style={{ minWidth:0 }}>
           <span style={{ fontWeight:800, fontSize:12, color:sec.color, letterSpacing:'.06em', textTransform:'uppercase' }}>{sec.label}</span>
-          <span style={{ fontSize:11, color:'#94a3b8', marginLeft:10 }}>{sec.desc}</span>
+          {!isMobile && <span style={{ fontSize:11, color:'#94a3b8', marginLeft:10 }}>{sec.desc}</span>}
         </div>
-        <span style={{ fontSize:11, fontWeight:700, color:'#94a3b8' }}>
+        <span style={{ fontSize:11, fontWeight:700, color:'#94a3b8', flexShrink:0 }}>
           {showAll || !hasMore ? secItems.length : TOP}/{secItems.length} apps
         </span>
       </div>
@@ -2238,7 +2238,7 @@ function SectionBlock({ sec, secItems, isMobile, t, onSimulate, onNavigate }) {
         <button
           onClick={expanded ? doCollapse : doExpand}
           style={{
-            width:'100%', padding:'10px 0', cursor:'pointer', fontFamily:'inherit',
+            width:'100%', padding:'12px 0', minHeight:44, cursor:'pointer', fontFamily:'inherit',
             background:'var(--surface)', border:'1px solid #e2e8f0', borderTop:'none',
             color: expanded ? '#94a3b8' : sec.color,
             fontWeight:700, fontSize:12,
@@ -3654,7 +3654,7 @@ const BOTTOM_NAV_ITEMS = [
     ),
   },
   {
-    key:'beneficios', label:'Beneficios',
+    key:'beneficios', label:'Benef.',
     icon: (active) => (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active?'#44685c':'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
@@ -5430,7 +5430,13 @@ function App() {
 
                   {/* Tabs de sección */}
                   <div className="nav-scroll" style={{ display:'flex', gap:0, marginBottom:16, borderBottom:'1px solid #e2e8f0' }}>
-                    {[{key:'all', label:'Todas las secciones'}, ...SECTION_META].map(s => (
+                    {[
+                      {key:'all',         label:'Todas las secciones', labelMobile:'Todas'},
+                      ...SECTION_META.map(s => ({
+                        ...s,
+                        labelMobile: s.key==='variable' ? 'Variable' : s.key==='garantizado' ? 'Garantizado' : 'Especial',
+                      })),
+                    ].map(s => (
                       <button key={s.key} onClick={() => { setFilter(s.key); setAnimKey(k => k+1); }} style={{
                         padding:'8px 14px', cursor:'pointer', fontFamily:'inherit',
                         fontSize:12, fontWeight: filter===s.key ? 700 : 500,
@@ -5442,7 +5448,7 @@ function App() {
                       }}
                         onMouseEnter={e => { if(filter!==s.key) e.currentTarget.style.color='#334155'; }}
                         onMouseLeave={e => { if(filter!==s.key) e.currentTarget.style.color='#64748b'; }}
-                      >{s.label}</button>
+                      >{isMobile ? s.labelMobile : s.label}</button>
                     ))}
                   </div>
 
