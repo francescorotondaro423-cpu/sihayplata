@@ -4224,8 +4224,8 @@ function App() {
         <div className="splash-card" style={{ position:'relative', maxWidth:520, width:'100%', marginRight:'auto' }}>
 
           {/* Logo */}
-          <div style={{ marginBottom:36 }}>
-            <img src="/titulo6.png" alt="SiHayPlata" style={{ height:64, width:'auto' }} />
+          <div style={{ marginBottom: isMobile ? 20 : 36 }}>
+            <img src="/titulo6.png" alt="SiHayPlata" style={{ height: isMobile ? 48 : 64, width:'auto' }} />
           </div>
 
           {/* Tag */}
@@ -4257,18 +4257,21 @@ function App() {
             {cats.map(cat => (
               <div key={cat.label} style={{
                 background:'#fff', border:'2px solid #e2e8f0',
-                borderRadius:12, padding:'16px 18px',
-                display:'flex', alignItems:'center', gap:14,
+                borderRadius:12, padding: isMobile ? '12px 10px' : '16px 18px',
+                display:'flex', alignItems:'center', gap: isMobile ? 8 : 14,
                 boxShadow:'0 2px 8px rgba(0,0,0,.04)',
+                minWidth:0,
               }}>
                 <div style={{
-                  width:42, height:42, borderRadius:10, flexShrink:0,
+                  width: isMobile ? 34 : 42, height: isMobile ? 34 : 42, borderRadius:10, flexShrink:0,
                   background:'#f0fdf4', display:'flex', alignItems:'center', justifyContent:'center',
                   color:'#44685c',
-                }}>{cat.icon}</div>
-                <div>
-                  <div style={{ fontSize:14, fontWeight:800, color:'#0f172a' }}>{cat.label}</div>
-                  <div style={{ fontSize:12, color:'#94a3b8', marginTop:3, lineHeight:1.35 }}>{cat.sub}</div>
+                }}>
+                  {React.cloneElement(cat.icon, { width: isMobile ? 20 : 28, height: isMobile ? 20 : 28 })}
+                </div>
+                <div style={{ minWidth:0 }}>
+                  <div style={{ fontSize: isMobile ? 12 : 14, fontWeight:800, color:'#0f172a', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{cat.label}</div>
+                  <div style={{ fontSize: isMobile ? 10 : 12, color:'#94a3b8', marginTop:3, lineHeight:1.35 }}>{cat.sub}</div>
                 </div>
               </div>
             ))}
