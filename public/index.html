@@ -3531,7 +3531,7 @@ function NewsEditorialSection({ noticias, noticiasLoad, dolares, onNavDolar }) {
   return (
     <section
       aria-label="Más información para ahorrar e invertir"
-      style={{ background:'var(--bg)', paddingTop:52, paddingBottom:12 }}
+      style={{ background:'var(--bg)', paddingTop:52, paddingBottom: isMob ? 'calc(80px + env(safe-area-inset-bottom, 0px))' : 12 }}
     >
       <div style={{ maxWidth:1300, margin:'0 auto', padding:'0 20px' }}>
 
@@ -7535,20 +7535,18 @@ function App() {
       </div>
 
       {/* ═══════════════════════════════════════════════════
-          SECCIÓN EDITORIAL — solo desktop/tablet
+          SECCIÓN EDITORIAL — desktop, tablet y mobile
       ═══════════════════════════════════════════════════ */}
-      {!isMobile && (
-        <NewsEditorialSection
-          noticias={noticias}
-          noticiasLoad={noticiasLoad}
-          dolares={dolares}
-          onNavDolar={(key) => {
-            handleTab('dolares');
-            if (key) { setDolView('detail'); setDolDetail(key); }
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
-        />
-      )}
+      <NewsEditorialSection
+        noticias={noticias}
+        noticiasLoad={noticiasLoad}
+        dolares={dolares}
+        onNavDolar={(key) => {
+          handleTab('dolares');
+          if (key) { setDolView('detail'); setDolDetail(key); }
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+      />
 
       {/* ═══════════════════════════════════════════════════
           FOOTER
