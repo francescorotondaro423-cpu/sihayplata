@@ -4452,7 +4452,8 @@ function App() {
                         >×</button>
                       )}
                     </div>
-                    {/* Hints de teclado */}
+                    {/* Hints de teclado — solo desktop */}
+                    {!isMobile && (
                     <div style={{
                       display:'flex', gap:12, marginTop:8, marginBottom:4,
                       fontSize:10, color:'#c4cdd8', letterSpacing:'.02em',
@@ -4468,6 +4469,7 @@ function App() {
                         </span>
                       ))}
                     </div>
+                    )}
                   </div>
 
                   {/* Divisor */}
