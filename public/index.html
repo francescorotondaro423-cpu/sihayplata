@@ -3615,9 +3615,9 @@ function RankCard({ item, rank, onSimulate, onNavigate }) {
       </div>
       <button onClick={() => onSimulate(item)} aria-label="Simular"
         style={{
-          width:38, height:38, borderRadius:8, flexShrink:0,
+          width:44, height:44, borderRadius:8, flexShrink:0,
           background:'var(--surface-2)', border:'1px solid var(--border)',
-          cursor:'pointer', fontSize:20, color:'#44685c',
+          cursor:'pointer', fontSize:22, color:'#44685c',
           display:'flex', alignItems:'center', justifyContent:'center',
           fontFamily:'inherit',
         }}>›</button>
@@ -5096,8 +5096,10 @@ function App() {
               <button
                 onClick={() => menuOpen ? closeMenu() : setMenuOpen(true)}
                 style={{
-                  background:'none', border:'none', cursor:'pointer', padding:'6px 8px',
-                  display:'flex', flexDirection:'column', gap:5, borderRadius:2,
+                  background:'none', border:'none', cursor:'pointer',
+                  padding: isMobile ? '10px 12px' : '6px 8px',
+                  minWidth:44, minHeight:44,
+                  display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:5, borderRadius:2,
                   transition:'background .15s',
                 }}
                 onMouseEnter={e => e.currentTarget.style.background='var(--hover-bg)'}
@@ -5243,7 +5245,7 @@ function App() {
 
       {/* ════════ MOBILE QUICK STATS BAR (reemplaza ticker en mobile) ════════ */}
       {isMobile && (
-        <div style={{ background:'#44685c', overflowX:'auto', display:'flex', scrollbarWidth:'none' }} className="nav-scroll">
+        <div style={{ background:'#44685c', overflowX:'auto', display:'flex' }} className="nav-scroll">
           {[
             arsData.badlar != null && { label:'BADLAR', val:`${arsData.badlar.toFixed(1)}%` },
             arsData.items[0] && { label:'Mejor TNA', val:`${arsData.items[0].tna.toFixed(1)}%` },
@@ -5524,22 +5526,29 @@ function App() {
                   ))}
                 </div>
 
-                {/* Table */}
+                {/* Table / Cards */}
                 <div ref={tableCardRef} style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:2, overflow:'hidden' }}>
                   {filtered.length === 0 ? (
                     <div style={{ textAlign:'center', color:'#94a3b8', padding:48, fontSize:14 }}>{t.noResults}</div>
+                  ) : isMobile ? (
+                    filtered.slice(0, visibleCount).map((item, idx) => (
+                      <RankCard key={item.id} item={item} rank={idx+1}
+                        onSimulate={setSimItem}
+                        onNavigate={appId => navigate('historial', appId)}
+                      />
+                    ))
                   ) : (
                     <div style={{ overflowX:'auto' }}>
                       <table style={{ width:'100%', borderCollapse:'collapse' }}>
                         <thead>
                           <tr style={{ borderBottom:'2px solid var(--border-lt)', background:'var(--surface-3)' }}>
-                            {[t.colEntidad, !isMobile && t.colProducto, t.colTNA, ''].filter(Boolean).map((col, i) => (
+                            {[t.colEntidad, t.colProducto, t.colTNA, ''].map((col, i) => (
                               <th key={i} style={{
-                                padding: isMobile ? '9px 8px' : '9px 12px',
-                                textAlign: (isMobile ? i===1 : i===2) ? 'right' : (isMobile ? i===2 : i===3) ? 'right' : 'left',
+                                padding:'9px 12px',
+                                textAlign: i===2 ? 'right' : i===3 ? 'right' : 'left',
                                 fontSize:11, fontWeight:700, color:'#94a3b8',
                                 letterSpacing:'.07em', textTransform:'uppercase', whiteSpace:'nowrap',
-                                ...(!isMobile && i===3 ? { width:180 } : {}),
+                                ...(i===3 ? { width:180 } : {}),
                               }}>{col}</th>
                             ))}
                           </tr>
@@ -5563,7 +5572,7 @@ function App() {
                                 }
                                 isNew={isNew}
                                 isExiting={isExiting}
-                                isMobile={isMobile}
+                                isMobile={false}
                               />
                             );
                           })}
@@ -5676,7 +5685,7 @@ function App() {
                     </svg>
                     <input type="text" placeholder="Buscar cotización…" style={{
                       border:'none', background:'none', outline:'none', fontFamily:'inherit',
-                      fontSize:13, color:'#0f172a', width:'100%',
+                      fontSize:16, color:'#0f172a', width:'100%',
                     }} />
                   </div>
 
@@ -5718,7 +5727,7 @@ function App() {
                     </svg>
                     <input type="text" placeholder="Buscar cotización…" style={{
                       border:'none', background:'none', outline:'none', fontFamily:'inherit',
-                      fontSize:13, color:'#0f172a', width:'100%',
+                      fontSize:16, color:'#0f172a', width:'100%',
                     }} />
                   </div>
 
