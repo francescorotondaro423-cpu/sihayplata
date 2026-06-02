@@ -3049,6 +3049,7 @@ function brandVisual(ad) {
 function AdBanner({ adId, compact }) {
   const ad = ADVERTISERS[adId];
   const [hov, setHov] = React.useState(false);
+  const isMob = useWindowWidth() < 768;
 
   React.useEffect(() => {
     if (!ad) return;
@@ -3099,8 +3100,10 @@ function AdBanner({ adId, compact }) {
     <div onClick={go} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
       style={{ width:'100%',borderRadius:14,overflow:'hidden',cursor:'pointer',position:'relative',
         background:`linear-gradient(140deg,${bg1} 0%,${bg2} 100%)`,
-        border:`1px solid ${accent}2a`, minHeight:230,
+        border:`1px solid ${accent}2a`,
+        minHeight: isMob ? 'auto' : 230,
         display:'flex',
+        flexDirection: isMob ? 'column' : 'row',
         boxShadow:hov?`0 18px 52px rgba(0,0,0,.55),0 0 44px ${accent}18`:`0 4px 22px rgba(0,0,0,.38)`,
         transform:hov?'translateY(-2px)':'none', transition:'box-shadow .25s,transform .2s',
       }}>
@@ -3108,45 +3111,67 @@ function AdBanner({ adId, compact }) {
       <div style={{ position:'absolute',inset:0,pointerEvents:'none',overflow:'hidden' }}>
         <div style={{ position:'absolute',top:'-40%',left:'30%',width:'65%',height:'180%',background:`radial-gradient(ellipse,${accent}0c 0%,transparent 60%)` }}/>
         <div style={{ position:'absolute',top:0,left:0,right:0,height:2,background:`linear-gradient(to right,transparent 0%,${accent}88 40%,${accent} 50%,${accent}88 60%,transparent 100%)` }}/>
-        <svg style={{ position:'absolute',bottom:0,left:0,opacity:.05 }} width="180" height="90" viewBox="0 0 180 90">
-          {Array.from({length:9},(_,r)=>Array.from({length:18},(_,c)=><circle key={`${r}${c}`} cx={c*10+5} cy={r*10+5} r=".9" fill="#fff"/>))}
-        </svg>
+        {!isMob && (
+          <svg style={{ position:'absolute',bottom:0,left:0,opacity:.05 }} width="180" height="90" viewBox="0 0 180 90">
+            {Array.from({length:9},(_,r)=>Array.from({length:18},(_,c)=><circle key={`${r}${c}`} cx={c*10+5} cy={r*10+5} r=".9" fill="#fff"/>))}
+          </svg>
+        )}
       </div>
 
-      {/* LEFT — copy */}
-      <div style={{ flex:'0 0 54%',padding:'clamp(22px,3vw,38px)',display:'flex',flexDirection:'column',justifyContent:'center',position:'relative',zIndex:2 }}>
-        <div style={{ display:'flex',alignItems:'center',gap:8,marginBottom:12 }}>
-          <span style={{ fontSize:10,fontWeight:800,color:accent,letterSpacing:'.16em',textTransform:'uppercase',padding:'3px 10px',background:accentDim,borderRadius:20,border:`1px solid ${accent}44` }}>{tag.split('·')[0].trim()}</span>
-          <span style={{ fontSize:11,color:'rgba(255,255,255,.28)',letterSpacing:'.1em',textTransform:'uppercase' }}>publicidad</span>
+      {/* COPY — izquierda en desktop, arriba en mobile */}
+      <div style={{
+        flex: isMob ? '1 1 auto' : '0 0 54%',
+        padding: isMob ? '22px 20px 20px' : 'clamp(22px,3vw,38px)',
+        display:'flex', flexDirection:'column', justifyContent:'center',
+        position:'relative', zIndex:2,
+      }}>
+        <div style={{ display:'flex',alignItems:'center',gap:8,marginBottom:10 }}>
+          <span style={{ fontSize:11,fontWeight:800,color:accent,letterSpacing:'.14em',textTransform:'uppercase',padding:'3px 10px',background:accentDim,borderRadius:20,border:`1px solid ${accent}44` }}>{tag.split('·')[0].trim()}</span>
+          <span style={{ fontSize:10,color:'rgba(255,255,255,.35)',letterSpacing:'.1em',textTransform:'uppercase' }}>publicidad</span>
         </div>
-        <div style={{ fontSize:11,fontWeight:700,color:`${accent}bb`,letterSpacing:'.07em',textTransform:'uppercase',marginBottom:8 }}>{name}</div>
-        <div style={{ fontSize:'clamp(20px,2.6vw,30px)',fontWeight:900,color:'#fff',lineHeight:1.15,letterSpacing:'-.4px',marginBottom:12 }}>
-          {lines[0]}<br/><span style={{ color:accent }}>{lines[1]}</span>
+        <div style={{ fontSize:11,fontWeight:700,color:`${accent}bb`,letterSpacing:'.07em',textTransform:'uppercase',marginBottom:6 }}>{name}</div>
+        <div style={{ fontSize: isMob ? 22 : 'clamp(20px,2.6vw,30px)',fontWeight:900,color:'#fff',lineHeight:1.2,letterSpacing:'-.4px',marginBottom:10 }}>
+          {lines[0]}{lines[1] && <><br/><span style={{ color:accent }}>{lines[1]}</span></>}
         </div>
-        <div style={{ fontSize:13,color:'rgba(255,255,255,.58)',lineHeight:1.62,marginBottom:18,maxWidth:310 }}>{sub}</div>
-        <div style={{ display:'flex',flexWrap:'wrap',gap:6,marginBottom:22 }}>
-          {perks.map(p=>(
-            <span key={p} style={{ fontSize:10,padding:'4px 10px',background:accentDim,border:`1px solid ${accent}33`,borderRadius:20,color:'rgba(255,255,255,.68)',fontWeight:600,display:'flex',alignItems:'center',gap:4 }}>
-              <span style={{ color:accent,fontWeight:900,fontSize:11 }}>✓</span>{p}
+        <div style={{ fontSize: isMob ? 13 : 13,color:'rgba(255,255,255,.58)',lineHeight:1.55,marginBottom:14,maxWidth: isMob ? '100%' : 310 }}>{sub}</div>
+
+        {/* Perks — en mobile mostrar máximo 3 en fila horizontal */}
+        <div style={{ display:'flex',flexWrap:'wrap',gap: isMob ? 5 : 6,marginBottom:18 }}>
+          {perks.slice(0, isMob ? 3 : perks.length).map(p=>(
+            <span key={p} style={{ fontSize: isMob ? 11 : 10,padding:'4px 10px',background:accentDim,border:`1px solid ${accent}33`,borderRadius:20,color:'rgba(255,255,255,.75)',fontWeight:600,display:'flex',alignItems:'center',gap:4 }}>
+              <span style={{ color:accent,fontWeight:900 }}>✓</span>{p}
             </span>
           ))}
         </div>
-        <div style={{ display:'flex',alignItems:'center',gap:14 }}>
+
+        {/* CTA — full width en mobile */}
+        <div style={{ display:'flex',alignItems:'center',gap:12, flexWrap: isMob ? 'wrap' : 'nowrap' }}>
           <button onClick={e=>{e.stopPropagation();go();}}
-            style={{ padding:'12px 26px',background:`linear-gradient(135deg,${accent} 0%,${accent}cc 100%)`,color:isDark?bg1:'#fff',border:'none',borderRadius:8,fontSize:13,fontWeight:800,cursor:'pointer',fontFamily:'inherit',letterSpacing:'.02em',boxShadow:`0 6px 22px ${accent}44`,transition:'opacity .15s,transform .1s' }}
+            style={{
+              flex: isMob ? '1 1 100%' : '0 0 auto',
+              padding: isMob ? '14px 20px' : '12px 26px',
+              minHeight: 48,
+              background:`linear-gradient(135deg,${accent} 0%,${accent}cc 100%)`,
+              color:isDark?bg1:'#fff',border:'none',borderRadius:10,
+              fontSize: isMob ? 15 : 13,fontWeight:800,cursor:'pointer',fontFamily:'inherit',
+              letterSpacing:'.02em',boxShadow:`0 6px 22px ${accent}44`,
+              transition:'opacity .15s,transform .1s',
+            }}
             onMouseEnter={e=>e.currentTarget.style.opacity='.87'}
             onMouseLeave={e=>e.currentTarget.style.opacity='1'}
             onMouseDown={e=>e.currentTarget.style.transform='scale(.97)'}
             onMouseUp={e=>e.currentTarget.style.transform='scale(1)'}
           >{cta} →</button>
-          {badge && <span style={{ fontSize:10,color:'rgba(255,255,255,.45)',fontWeight:600 }}><span style={{ color:accent }}>★</span> {badge}</span>}
+          {badge && <span style={{ fontSize:11,color:'rgba(255,255,255,.5)',fontWeight:600 }}><span style={{ color:accent }}>★</span> {badge}</span>}
         </div>
       </div>
 
-      {/* RIGHT — visual */}
-      <div style={{ flex:'0 0 46%',position:'relative',zIndex:2,overflow:'hidden' }}>
-        {brandVisual(ad)}
-      </div>
+      {/* VISUAL — derecha en desktop, oculto en mobile */}
+      {!isMob && (
+        <div style={{ flex:'0 0 46%',position:'relative',zIndex:2,overflow:'hidden' }}>
+          {brandVisual(ad)}
+        </div>
+      )}
     </div>
   );
 }
