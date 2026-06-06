@@ -3,7 +3,7 @@ services:
     name: sihayplata
     env: node
     plan: free
-    buildCommand: npm install
+    buildCommand: npm install && npm run build
     startCommand: npm start
     healthCheckPath: /api/rates
     envVars:

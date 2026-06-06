@@ -329,8 +329,21 @@ async function buildRates() {
 /* ─────────────────────────────────────────────────────────────
    EXPRESS
 ───────────────────────────────────────────────────────────── */
+/* Servir desde dist/ (build compilado) si existe, sino desde public/ (dev con Babel) */
+const DIST_INDEX = path.join(__dirname, 'dist', 'index.html');
+const STATIC_DIR = fs.existsSync(DIST_INDEX)
+  ? path.join(__dirname, 'dist')
+  : path.join(__dirname, 'public');
+
+if (STATIC_DIR.endsWith('dist')) {
+  /* En producción: dist/ para index.html compilado, public/ para el resto de assets */
+  app.use(express.static(path.join(__dirname, 'dist')));
+  app.use(express.static(path.join(__dirname, 'public')));
+} else {
+  app.use(express.static(path.join(__dirname, 'public')));
+}
+
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
 /* GET /api/rates — principal */
 app.get('/api/rates', async (req, res) => {
@@ -1033,7 +1046,7 @@ app.put('/api/ads/:id/refcode', (req, res) => {
 
 /* GET /* — SPA fallback */
 app.get('*', (_req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(fs.existsSync(DIST_INDEX) ? DIST_INDEX : path.join(__dirname, 'public', 'index.html'));
 });
 
 /* ─────────────────────────────────────────────────────────────

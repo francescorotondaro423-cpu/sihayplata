@@ -4,6 +4,7 @@
   "description": "Top rendimientos financieros Argentina — API + Frontend",
   "main": "server.js",
   "scripts": {
+    "build": "node build.js",
     "start": "node server.js",
     "dev": "node --watch server.js"
   },
@@ -18,5 +19,9 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@babel/preset-react": "^7.29.7"
   }
 }
