@@ -86,6 +86,14 @@ async function _scrapeOneApp(page, { app, url, waitMs }) {
 
 async function sourcePuppeteer() {
   const { default: puppeteer } = await import('puppeteer');
+
+  /* Si PUPPETEER_SKIP_DOWNLOAD=true, Chrome no fue descargado — falla rápido */
+  const execPath = puppeteer.executablePath?.();
+  if (execPath && !require('fs').existsSync(execPath)) {
+    console.warn('[source:puppeteer] Chrome no disponible (PUPPETEER_SKIP_DOWNLOAD=true) — usando fuentes HTTP');
+    return { ok: false, rates: [], reason: 'Chrome no instalado (build sin Chromium)' };
+  }
+
   console.log('[source:puppeteer] Iniciando navegador headless…');
   const browser = await puppeteer.launch({
     headless: true,
@@ -124,67 +132,71 @@ async function sourcePuppeteer() {
 
 /* ═══════════════════════════════════════════════════════════════════
    FUENTE 2 — HTTP Fetch (sin navegador)
-   Intenta obtener datos de páginas comparadoras públicas usando
-   requests HTTP directos con headers de browser real.
-   Parsea el HTML con regex para encontrar TNAs junto a nombres de apps.
+   Intenta TODOS los endpoints en paralelo y mergea todos los
+   resultados. Así una sola fuente que quede stale no bloquea el resto.
 ═══════════════════════════════════════════════════════════════════ */
+
+// URLs permanentes de secciones (no artículos individuales)
 const HTTP_ENDPOINTS = [
-  {
-    name: 'comparatasas.ar',
-    url:  'https://comparatasas.ar/',
-  },
-  {
-    name: 'ElEconomista — rendimientos',
-    url:  'https://eleconomista.com.ar/especial/rendimientos',
-  },
-  {
-    name: 'iProfesional — billeteras',
-    url:  'https://www.iprofesional.com/finanzas/455670-billeteras-virtuales-suben-tasa-26-por-ciento-dejan-atras-plazo-fijo-bancario-mayo-2026',
-  },
+  { name: 'comparatasas.ar',              url: 'https://comparatasas.ar/' },
+  { name: 'ElEconomista — rendimientos',  url: 'https://eleconomista.com.ar/especial/rendimientos' },
+  { name: 'Ambito — billeteras',          url: 'https://www.ambito.com/economia/billeteras-virtuales' },
+  { name: 'Cronista — billeteras',        url: 'https://www.cronista.com/finanzas-mercados/billeteras-digitales/' },
+  { name: 'iProfesional — billeteras',    url: 'https://www.iprofesional.com/finanzas/billeteras-virtuales' },
 ];
 
-// Apps conocidas a buscar en el texto HTML
-const KNOWN_APPS = [
-  'Ualá', 'Naranja X', 'Mercado Pago', 'Personal Pay', 'Brubank',
-  'Cocos Capital', 'Fiwind', 'Lemon Cash', 'Prex', 'N1U',
-  'Balanz', 'IEB+', 'Claro Pay', 'Global66', 'Adcap', 'Reba',
-  'Personal Pay', 'Cuenta DNI', 'Bibank', 'Banco Del Sol',
-];
+// Aliases: formas alternativas con que puede aparecer cada app en el HTML
+const APP_ALIASES = {
+  'Mercado Pago':  ['Mercado Pago', 'MercadoPago'],
+  'Lemon Cash':    ['Lemon Cash', 'Lemon'],
+  'Personal Pay':  ['Personal Pay', 'PersonalPay'],
+  'Naranja X':     ['Naranja X', 'NaranjaX'],
+  'Cocos Capital': ['Cocos Capital', 'Cocos'],
+  'Claro Pay':     ['Claro Pay', 'ClaroPay'],
+  'Cuenta DNI':    ['Cuenta DNI', 'CuentaDNI'],
+  'Banco Del Sol': ['Banco Del Sol', 'BancoDelSol'],
+  'IEB+':          ['IEB+', 'IEB +'],
+  'Ualá':          ['Ualá', 'Uala'],
+  'Balanz':        ['Balanz'],
+  'Brubank':       ['Brubank'],
+  'Adcap':         ['Adcap'],
+  'Global66':      ['Global66'],
+  'Fiwind':        ['Fiwind'],
+  'Prex':          ['Prex'],
+  'N1U':           ['N1U'],
+  'Reba':          ['Reba'],
+  'Bibank':        ['Bibank'],
+};
 
 function _parseRatesFromHTML(html) {
-  // Convierte HTML a texto plano básico quitando tags
   const text  = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
-  const rates = [];
+  const found = new Map(); // canonical app name → best TNA
 
-  for (const appName of KNOWN_APPS) {
-    const idx = text.indexOf(appName);
-    if (idx === -1) continue;
+  for (const [canonical, aliases] of Object.entries(APP_ALIASES)) {
+    for (const alias of aliases) {
+      const idx = text.indexOf(alias);
+      if (idx === -1) continue;
 
-    // Ventana de contexto: 200 chars antes y después del nombre
-    const window = text.slice(Math.max(0, idx - 30), idx + 200);
+      // Solo mira hacia adelante desde el nombre (evita capturar la tasa de la app anterior)
+      const ctx     = text.slice(idx + alias.length, idx + alias.length + 250);
+      const matches = [...ctx.matchAll(/(\d{1,3}(?:[.,]\d{1,2})?)\s*%/g)];
 
-    // Busca porcentajes en esa ventana
-    const matches = [...window.matchAll(/(\d{1,3}(?:[.,]\d{1,2})?)\s*%/g)];
-    for (const m of matches) {
-      const val = parseFloat(m[1].replace(',', '.'));
-      if (val >= 10 && val <= 45) {
-        rates.push({ app: appName, tna: val });
-        break;
+      for (const m of matches) {
+        const val = parseFloat(m[1].replace(',', '.'));
+        if (val >= 10 && val <= 45) {
+          // Si ya hay un valor para esta app, toma el más alto (rendimiento max visible)
+          if (!found.has(canonical) || val > found.get(canonical)) {
+            found.set(canonical, val);
+          }
+          break;
+        }
       }
+
+      if (found.has(canonical)) break; // alias encontrado — no busca más aliases
     }
   }
 
-  // Deduplica: si hay múltiples menciones de la misma app, toma el promedio
-  const grouped = {};
-  for (const r of rates) {
-    if (!grouped[r.app]) grouped[r.app] = [];
-    grouped[r.app].push(r.tna);
-  }
-
-  return Object.entries(grouped).map(([app, tnas]) => ({
-    app,
-    tna: parseFloat((tnas.reduce((a, b) => a + b, 0) / tnas.length).toFixed(2)),
-  }));
+  return [...found.entries()].map(([app, tna]) => ({ app, tna }));
 }
 
 const HTTP_HEADERS = {
@@ -195,38 +207,53 @@ const HTTP_HEADERS = {
   'Cache-Control':   'no-cache',
 };
 
+async function _fetchEndpoint(endpoint) {
+  try {
+    const res = await fetch(endpoint.url, {
+      headers:  HTTP_HEADERS,
+      signal:   AbortSignal.timeout(15_000),
+      redirect: 'follow',
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+    const html  = await res.text();
+    const rates = _parseRatesFromHTML(html);
+    console.log(`[source:http] ✓ ${endpoint.name} — ${rates.length} apps`);
+    return { ok: true, rates };
+  } catch (err) {
+    console.warn(`[source:http] ✗ ${endpoint.name} — ${err.message}`);
+    return { ok: false, rates: [] };
+  }
+}
+
 async function sourceHTTP() {
-  for (const endpoint of HTTP_ENDPOINTS) {
-    console.log(`[source:http] Intentando: ${endpoint.name}`);
-    try {
-      const res = await fetch(endpoint.url, {
-        headers: HTTP_HEADERS,
-        signal:  AbortSignal.timeout(12_000),
-        redirect: 'follow',
-      });
+  // Lanza todos los endpoints en paralelo
+  const results = await Promise.all(HTTP_ENDPOINTS.map(_fetchEndpoint));
 
-      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-
-      const html  = await res.text();
-      const rates = _parseRatesFromHTML(html);
-
-      if (rates.length >= 3) {
-        console.log(`[source:http] ✓ ${endpoint.name} — ${rates.length} apps encontradas`);
-        return { ok: true, rates, source: endpoint.name };
-      }
-
-      console.warn(`[source:http] ✗ ${endpoint.name} — solo ${rates.length} apps (insuficiente)`);
-
-    } catch (err) {
-      console.warn(`[source:http] ✗ ${endpoint.name} — ${err.message}`);
+  // Mergea: por app, toma el promedio de todos los valores encontrados
+  const accumulated = new Map(); // app → TNA[]
+  for (const { rates } of results) {
+    for (const r of rates) {
+      if (!accumulated.has(r.app)) accumulated.set(r.app, []);
+      accumulated.get(r.app).push(r.tna);
     }
   }
 
-  return {
-    ok:     false,
-    rates:  [],
-    reason: 'Todos los endpoints HTTP fallaron o devolvieron datos insuficientes',
-  };
+  if (accumulated.size === 0) {
+    return {
+      ok:     false,
+      rates:  [],
+      reason: 'Todos los endpoints HTTP fallaron o no encontraron apps',
+    };
+  }
+
+  const merged = [...accumulated.entries()].map(([app, tnas]) => ({
+    app,
+    tna: parseFloat((tnas.reduce((a, b) => a + b, 0) / tnas.length).toFixed(2)),
+  }));
+
+  const successCount = results.filter(r => r.ok && r.rates.length > 0).length;
+  console.log(`[source:http] Merge final: ${merged.length} apps de ${successCount}/${HTTP_ENDPOINTS.length} endpoints`);
+  return { ok: true, rates: merged, source: `HTTP multi-endpoint (${successCount}/${HTTP_ENDPOINTS.length})` };
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -260,4 +287,61 @@ async function sourceBADLARRecalc(badlar) {
   return { ok: true, rates };
 }
 
-module.exports = { sourcePuppeteer, sourceHTTP, sourceBADLARRecalc };
+/* ═══════════════════════════════════════════════════════════════════
+   FUENTE 4 — ArgentinaDatos API (FCI directos — datos CNV oficiales)
+   Obtiene la TNA real de fondos específicos desde la API pública de
+   argentinadatos.com, que agrega datos de cuotapartes de la CNV.
+   Se usa como fuente autoritativa app por app; corre antes del waterfall.
+   Agregar más apps en ARGENTINADATOS_FCI_MAP a medida que se verifican.
+═══════════════════════════════════════════════════════════════════ */
+
+// Mapping: app de nuestra app → fondo en argentinadatos (siempre Clase A = clase retail)
+const ARGENTINADATOS_FCI_MAP = [
+  { app: 'Mercado Pago', fondoNombre: 'Mercado Fondo', clase: 'Clase A' },
+];
+
+async function sourceArgentinaDatos() {
+  const API_URL = 'https://api.argentinadatos.com/v1/finanzas/fci/fondos';
+  try {
+    const res = await fetch(API_URL, {
+      headers: {
+        'Accept':     'application/json',
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36',
+      },
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+
+    const data   = await res.json();
+    const fondos = data.fondos || [];
+
+    const rates = [];
+    for (const { app, fondoNombre, clase } of ARGENTINADATOS_FCI_MAP) {
+      const match = fondos.find(f =>
+        f.nombre.toLowerCase().startsWith(fondoNombre.toLowerCase()) &&
+        f.nombre.toLowerCase().includes(clase.toLowerCase())
+      );
+
+      if (!match) {
+        console.warn(`[source:argentinadatos] ✗ ${app}: "${fondoNombre} - ${clase}" no encontrado`);
+        continue;
+      }
+
+      const tna = match.rendimientos?.ultimos7Dias;
+      if (tna == null || typeof tna !== 'number' || !isFinite(tna) || tna <= 0) {
+        console.warn(`[source:argentinadatos] ✗ ${app}: TNA no disponible (${tna})`);
+        continue;
+      }
+
+      console.log(`[source:argentinadatos] ✓ ${app}: ${tna}% TNA (últimos 7d, CNV)`);
+      rates.push({ app, tna });
+    }
+
+    return { ok: rates.length > 0, rates, reason: rates.length === 0 ? 'Ningún fondo mapeado devolvió TNA' : undefined };
+  } catch (err) {
+    console.warn(`[source:argentinadatos] ERROR: ${err.message}`);
+    return { ok: false, rates: [], reason: err.message };
+  }
+}
+
+module.exports = { sourcePuppeteer, sourceHTTP, sourceBADLARRecalc, sourceArgentinaDatos };
