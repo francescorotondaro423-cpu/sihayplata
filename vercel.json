@@ -11,5 +11,15 @@
       "src": "/(.*)",
       "dest": "/server.js"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/scraper",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/snapshot",
+      "schedule": "59 23 * * *"
+    }
   ]
 }

@@ -57,9 +57,12 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://unpkg.com" crossorigin />
   <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'"
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" />
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" /></noscript>
+  <script>try{if(localStorage.getItem('shp_dark')==='1')document.documentElement.classList.add('dark')}catch(e){}</script>
+  <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));}</script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -107,6 +110,7 @@
       --shadow-md: rgba(0,0,0,.4);
     }
 
+    html { background: var(--bg); }
     body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--txt-1); transition: background .35s, color .35s; }
 
     ::-webkit-scrollbar              { width: 5px; height: 5px; }
@@ -3858,7 +3862,7 @@ function App() {
   useEffect(() => {
     if (Date.now() - noticiasFetchedAt < SIX_HOURS && noticias.length > 0) return;
     loadNoticias();
-  }, [activeTab]);
+  }, []);
 
   const [currentPage, setCurrentPage] = useState(() => {
     const h = window.location.hash;
@@ -4113,20 +4117,23 @@ function App() {
           <div style={{ position:'absolute', bottom:'-6%', right:'30%', width:'28vw', height:'28vw', borderRadius:'50%', background:'radial-gradient(circle, #44685c09 0%, transparent 70%)' }} />
         </div>
 
-        {/* ── Persona splash (PNG con fondo transparente) ── */}
+        {/* ── Persona splash ── */}
         {!isMobile && (
-          <img
-            src="/persona-splash.png"
-            alt=""
-            className="splash-person"
-            style={{
-              position:'absolute', right:'5%', bottom:0,
-              width:'clamp(203px,29vw,428px)',
-              height:'auto',
-              pointerEvents:'none', userSelect:'none',
-              display:'block',
-            }}
-          />
+          <picture>
+            <source srcSet="/persona-splash.webp" type="image/webp" />
+            <img
+              src="/persona-splash.png"
+              alt=""
+              className="splash-person"
+              style={{
+                position:'absolute', right:'5%', bottom:0,
+                width:'clamp(203px,29vw,428px)',
+                height:'auto',
+                pointerEvents:'none', userSelect:'none',
+                display:'block',
+              }}
+            />
+          </picture>
         )}
         {/* SVG placeholder — eliminar luego de confirmar imagen */}
         <div style={{ display:'none' }}>
@@ -5996,8 +6003,8 @@ function App() {
               const cripto = dolares.cripto;
               return (
                 <div className="fade-in">
-                  <div style={{ fontWeight:800, fontSize:18, color:'#0f172a', marginBottom:6 }}>Criptos</div>
-                  <div style={{ fontSize:12, color:'#94a3b8', marginBottom:16 }}>Yields en USD · cotizaciones crypto</div>
+                  <div style={{ fontWeight:800, fontSize:18, color:'var(--txt-1)', marginBottom:6 }}>Criptos</div>
+                  <div style={{ fontSize:12, color:'var(--txt-2)', marginBottom:16 }}>Yields en USD · cotizaciones crypto</div>
 
                   {/* Dólar Cripto card */}
                   {cripto && (
@@ -6022,25 +6029,25 @@ function App() {
                   {/* Tabla de yields */}
                   <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:2, overflow:'hidden', marginBottom:16 }}>
                     <div style={{ padding:'12px 16px', borderBottom:'1px solid var(--border-lt)', background:'var(--surface-3)' }}>
-                      <div style={{ fontSize:11, fontWeight:700, color:'#94a3b8', letterSpacing:'.07em' }}>YIELDS EN DÓLARES · CRYPTO STAKING</div>
+                      <div style={{ fontSize:11, fontWeight:700, color:'var(--txt-3)', letterSpacing:'.07em' }}>YIELDS EN DÓLARES · CRYPTO STAKING</div>
                     </div>
                     {cryptoApps.map((item, i) => (
                       <div key={item.app} style={{
                         display:'flex', alignItems:'center', gap:12, padding:'12px 16px',
-                        borderBottom: i < cryptoApps.length-1 ? '1px solid #f1f5f9' : 'none',
+                        borderBottom: i < cryptoApps.length-1 ? '1px solid var(--border-lt)' : 'none',
                         transition:'background .1s',
                       }}
-                        onMouseEnter={e => e.currentTarget.style.background='#f8fafc'}
+                        onMouseEnter={e => e.currentTarget.style.background='var(--hover-bg)'}
                         onMouseLeave={e => e.currentTarget.style.background='none'}
                       >
                         <AppLogo app={item.app} size={34} />
                         <div style={{ flex:1 }}>
-                          <div style={{ fontWeight:700, fontSize:14, color:'#0f172a' }}>{item.app}</div>
-                          <div style={{ fontSize:11, color:'#94a3b8', marginTop:1 }}>{item.info}</div>
+                          <div style={{ fontWeight:700, fontSize:14, color:'var(--txt-1)' }}>{item.app}</div>
+                          <div style={{ fontSize:11, color:'var(--txt-3)', marginTop:1 }}>{item.info}</div>
                         </div>
                         <div style={{ textAlign:'right' }}>
                           <div style={{ fontWeight:900, fontSize:18, color:'#0f766e', letterSpacing:'-.5px' }}>{item.tna}%</div>
-                          <div style={{ fontSize:10, color:'#94a3b8' }}>TNA</div>
+                          <div style={{ fontSize:10, color:'var(--txt-3)' }}>TNA</div>
                         </div>
                       </div>
                     ))}
@@ -6059,8 +6066,8 @@ function App() {
                 : allApps;
               return (
                 <div className="fade-in">
-                  <div style={{ fontWeight:800, fontSize:20, color:'#0f172a', marginBottom:4 }}>Aplicaciones</div>
-                  <div style={{ fontSize:12, color:'#94a3b8', marginBottom:12 }}>Rendimientos actuales por plataforma</div>
+                  <div style={{ fontWeight:800, fontSize:20, color:'var(--txt-1)', marginBottom:4 }}>Aplicaciones</div>
+                  <div style={{ fontSize:12, color:'var(--txt-3)', marginBottom:12 }}>Rendimientos actuales por plataforma</div>
 
                   {/* Buscador */}
                   <div style={{ position:'relative', marginBottom:16 }}>
@@ -6081,10 +6088,10 @@ function App() {
 
                   <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:2, overflow:'hidden' }}>
                     {/* cabecera */}
-                    <div style={{ display:'flex', alignItems:'center', padding:'9px 16px', background:'#fafafa', borderBottom:'2px solid #f1f5f9', gap:14 }}>
-                      <div style={{ flex:1, fontSize:11, fontWeight:700, color:'#94a3b8' }}>{filtered.length} apps</div>
-                      <div style={{ width:72, textAlign:'right', fontSize:11, fontWeight:700, color:'#94a3b8', letterSpacing:'.07em' }}>ARS TNA</div>
-                      {!isMobile && <div style={{ width:72, textAlign:'right', fontSize:11, fontWeight:700, color:'#94a3b8', letterSpacing:'.07em' }}>USD TNA</div>}
+                    <div style={{ display:'flex', alignItems:'center', padding:'9px 16px', background:'var(--surface-3)', borderBottom:'2px solid var(--border-lt)', gap:14 }}>
+                      <div style={{ flex:1, fontSize:11, fontWeight:700, color:'var(--txt-3)' }}>{filtered.length} apps</div>
+                      <div style={{ width:72, textAlign:'right', fontSize:11, fontWeight:700, color:'var(--txt-3)', letterSpacing:'.07em' }}>ARS TNA</div>
+                      {!isMobile && <div style={{ width:72, textAlign:'right', fontSize:11, fontWeight:700, color:'var(--txt-3)', letterSpacing:'.07em' }}>USD TNA</div>}
                     </div>
 
                     {filtered.map(([name], i, arr) => {

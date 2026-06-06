@@ -2,10 +2,12 @@
 
 require('dotenv').config();
 
-const express = require('express');
-const path    = require('path');
-const fs      = require('fs');
-const cron    = require('node-cron');
+const express   = require('express');
+const path      = require('path');
+const fs        = require('fs');
+const cron      = require('node-cron');
+const compress  = require('compression');
+const rateLimit = require('express-rate-limit');
 const { runScraper } = require('./scraper');
 
 /* ── Módulo Promotions (Supermercados v2) ── */
@@ -23,6 +25,25 @@ const fuelSvc    = require('./services/fuel/FuelService');
 
 const app  = express();
 const PORT = process.env.PORT || 8080;
+
+/* ── Compresión gzip/brotli en todas las respuestas ── */
+app.use(compress());
+
+/* ── Rate limiters ── */
+const reportLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiadas solicitudes, intentá más tarde' },
+});
+
+const impressionLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 /* ─────────────────────────────────────────────────────────────
    PERFILES ARS  —  cargados desde archivo (actualizado por scraper)
@@ -264,7 +285,11 @@ async function buildRates() {
   const arsItems = arsData.items
     .map(p => ({
       ...p,
-      tna:    parseFloat((badlar + p.spread).toFixed(2)),
+      // tnaDirecta: TNA real de API (FCI/CNV). No pasa por BADLAR+spread.
+      // Sin tnaDirecta: tasa bancaria definida como BADLAR + spread fijo.
+      tna:    p.tnaDirecta != null
+        ? parseFloat(p.tnaDirecta.toFixed(2))
+        : parseFloat((badlar + p.spread).toFixed(2)),
       src:    p.src || 'BCRA',
       change: 0,
     }))
@@ -314,6 +339,7 @@ app.get('/api/rates', async (req, res) => {
   if (!forceRefresh) {
     const cached = ratesCache.get();
     if (cached) {
+      res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=7200');
       return res.json({
         ...cached,
         _cache: { hit: true, ageSeconds: ratesCache.ageSeconds() },
@@ -325,6 +351,7 @@ app.get('/api/rates', async (req, res) => {
     const data = await buildRates();
     ratesCache.set(data);
     console.log(`[${new Date().toISOString()}] Rates actualizados — BADLAR: ${data.ars.badlar}%`);
+    res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=7200');
     return res.json({ ...data, _cache: { hit: false } });
   } catch (err) {
     console.error(`[${new Date().toISOString()}] Error: ${err.message}`);
@@ -360,7 +387,7 @@ app.get('/api/health', (req, res) => {
 /* POST /api/usd — actualizar tasas USD manualmente (protegido con API key) */
 app.post('/api/usd', (req, res) => {
   const key = req.headers['x-api-key'];
-  if (key !== (process.env.ADMIN_KEY || 'finrank-admin-2026')) {
+  if (key !== process.env.ADMIN_KEY) {
     return res.status(401).json({ error: 'No autorizado' });
   }
   const { items, sourceLabel } = req.body;
@@ -385,7 +412,7 @@ app.post('/api/usd', (req, res) => {
 /* POST /api/ars — actualizar tasas ARS manualmente (spreads o TNA absoluta) */
 app.post('/api/ars', async (req, res) => {
   const key = req.headers['x-api-key'];
-  if (key !== (process.env.ADMIN_KEY || 'finrank-admin-2026')) {
+  if (key !== process.env.ADMIN_KEY) {
     return res.status(401).json({ error: 'No autorizado' });
   }
 
@@ -436,7 +463,7 @@ app.post('/api/ars', async (req, res) => {
 /* POST /api/scraper/run — dispara el scraper manualmente */
 app.post('/api/scraper/run', async (req, res) => {
   const key = req.headers['x-api-key'];
-  if (key !== (process.env.ADMIN_KEY || 'finrank-admin-2026')) {
+  if (key !== process.env.ADMIN_KEY) {
     return res.status(401).json({ error: 'No autorizado' });
   }
 
@@ -464,6 +491,45 @@ app.get('/api/scraper/status', (req, res) => {
   });
 });
 
+/* GET /api/scraper/health — frescura de datos por app */
+app.get('/api/scraper/health', (req, res) => {
+  const data  = loadARSData();
+  const today = new Date().toISOString().slice(0, 10);
+
+  const apps = (data.items || []).map(item => {
+    const lastUpdated = item.lastUpdated;
+    let ageDays = null;
+    let status  = 'manual';
+
+    if (lastUpdated && lastUpdated !== 'pre-scraper') {
+      const diffMs = Date.now() - new Date(lastUpdated).getTime();
+      ageDays      = Math.floor(diffMs / 86_400_000);
+      status       = ageDays === 0 ? 'fresh' : ageDays <= 3 ? 'ok' : 'stale';
+    }
+
+    return {
+      app:         item.app,
+      spread:      item.spread,
+      lastUpdated: lastUpdated || null,
+      src:         item.src    || null,
+      ageDays,
+      status,
+    };
+  });
+
+  const fresh  = apps.filter(a => a.status === 'fresh').length;
+  const ok     = apps.filter(a => a.status === 'ok').length;
+  const stale  = apps.filter(a => a.status === 'stale').length;
+  const manual = apps.filter(a => a.status === 'manual').length;
+
+  res.json({
+    lastScraperRun:  data.lastScraperRun || null,
+    sourceLabel:     data.sourceLabel    || null,
+    summary: { total: apps.length, fresh, ok, stale, manual },
+    apps,
+  });
+});
+
 /* GET /api/rendimientos/historial/:appId */
 app.get('/api/rendimientos/historial/:appId', (req, res) => {
   const { appId } = req.params;
@@ -471,6 +537,10 @@ app.get('/api/rendimientos/historial/:appId', (req, res) => {
   const data = (h[appId] || []).slice().sort((a, b) => a.date.localeCompare(b.date));
   res.json({ appId, data });
 });
+
+/* Caché en memoria para historico — evita llamar BCRA en cada request */
+const historicoCache = new Map(); // key: `${appId}:${maxPts}` → { data, ts }
+const HISTORICO_TTL  = 60 * 60 * 1000; // 1 hora
 
 /* GET /api/rendimientos/historico/:appId — TNA calculada sobre BADLAR real (BCRA v4.0) */
 app.get('/api/rendimientos/historico/:appId', async (req, res) => {
@@ -482,6 +552,14 @@ app.get('/api/rendimientos/historico/:appId', async (req, res) => {
   if (!profile) return res.status(404).json({ error: 'App no encontrada' });
 
   const { spread } = profile;
+  const cacheKey   = `${appId}:${maxPts}`;
+
+  /* Servir desde caché si existe y no venció */
+  const hit = historicoCache.get(cacheKey);
+  if (hit && Date.now() - hit.ts < HISTORICO_TTL) {
+    res.set('Cache-Control', 'public, max-age=3600');
+    return res.json({ ...hit.data, _cache: true });
+  }
 
   try {
     // Buffer 2× para cubrir fines de semana y feriados (BCRA no publica todos los días)
@@ -501,7 +579,7 @@ app.get('/api/rendimientos/historico/:appId', async (req, res) => {
 
     const spreadType = profile.src === 'manual' ? 'verificado manualmente' : 'estimado (referencial)';
 
-    res.json({
+    const payload = {
       appId,
       spread,
       spreadType,
@@ -510,9 +588,16 @@ app.get('/api/rendimientos/historico/:appId', async (req, res) => {
       calcFormula: `TNA = BADLAR + ${spread >= 0 ? '+' : ''}${spread} pp (spread ${spreadType})`,
       disclaimer:  `El spread puede diferir del que publica la entidad. La TNA es calculada, no la tasa exacta que acredita cada plataforma.`,
       data,
-    });
+    };
+
+    historicoCache.set(cacheKey, { data: payload, ts: Date.now() });
+    res.set('Cache-Control', 'public, max-age=3600');
+    res.json(payload);
   } catch (err) {
     console.error('[historico]', err.message);
+    /* Servir stale si existe */
+    const stale = historicoCache.get(cacheKey);
+    if (stale) return res.json({ ...stale.data, _stale: true });
     res.status(503).json({ error: `BCRA no disponible: ${err.message}` });
   }
 });
@@ -574,7 +659,7 @@ app.get('/api/transporte', (req, res) => {
 });
 
 /* POST /api/transporte/:id/reportar — crowdsourcing: usuario reporta que cambió */
-app.post('/api/transporte/:id/reportar', (req, res) => {
+app.post('/api/transporte/:id/reportar', reportLimiter, (req, res) => {
   const id   = parseInt(req.params.id);
   const data = loadTransporte();
   const item = data.items.find(i => i.id === id);
@@ -589,7 +674,7 @@ app.post('/api/transporte/:id/reportar', (req, res) => {
 /* PUT /api/transporte/:id — actualización editorial (admin, 1° de cada mes) */
 app.put('/api/transporte/:id', (req, res) => {
   const key = req.headers['x-api-key'];
-  if (key !== (process.env.ADMIN_KEY || 'finrank-admin-2026'))
+  if (key !== process.env.ADMIN_KEY)
     return res.status(401).json({ error: 'No autorizado' });
   const id  = parseInt(req.params.id);
   const data = loadTransporte();
@@ -605,7 +690,7 @@ app.put('/api/transporte/:id', (req, res) => {
 /* POST /api/transporte — crear nuevo beneficio (admin) */
 app.post('/api/transporte', (req, res) => {
   const key = req.headers['x-api-key'];
-  if (key !== (process.env.ADMIN_KEY || 'finrank-admin-2026'))
+  if (key !== process.env.ADMIN_KEY)
     return res.status(401).json({ error: 'No autorizado' });
   const data  = loadTransporte();
   const newId = data.items.length ? Math.max(...data.items.map(i => i.id)) + 1 : 1;
@@ -630,9 +715,44 @@ app.use('/api/fuel',      fuelRouter);
 /* POST /api/rendimientos/snapshot — disparo manual (API key requerida) */
 app.post('/api/rendimientos/snapshot', async (req, res) => {
   const key = req.headers['x-api-key'];
-  if (key !== (process.env.ADMIN_KEY || 'finrank-admin-2026')) {
+  if (key !== process.env.ADMIN_KEY) {
     return res.status(401).json({ error: 'No autorizado' });
   }
+  res.json({ ok: true, message: 'Snapshot iniciado' });
+  runDailyHistorialSnapshot();
+});
+
+/* ─────────────────────────────────────────────────────────────
+   VERCEL CRON ENDPOINTS
+   Llamados automáticamente por Vercel Cron según vercel.json.
+   Protegidos con CRON_SECRET (header Authorization: Bearer).
+───────────────────────────────────────────────────────────── */
+function verifyCronSecret(req, res) {
+  const auth = req.headers.authorization;
+  if (process.env.CRON_SECRET && auth !== `Bearer ${process.env.CRON_SECRET}`) {
+    res.status(401).json({ error: 'No autorizado' });
+    return false;
+  }
+  return true;
+}
+
+app.get('/api/cron/scraper', async (req, res) => {
+  if (!verifyCronSecret(req, res)) return;
+  res.json({ ok: true, message: 'Scraper iniciado' });
+  (async () => {
+    try {
+      const { value: badlar } = await getBADLAR();
+      const result = await runScraper(badlar);
+      ratesCache.invalidate();
+      console.log(`[cron-vercel] Scraper completado: ${result.ok}/${result.total} ok`);
+    } catch (err) {
+      console.error('[cron-vercel] Scraper error:', err.message);
+    }
+  })();
+});
+
+app.get('/api/cron/snapshot', async (req, res) => {
+  if (!verifyCronSecret(req, res)) return;
   res.json({ ok: true, message: 'Snapshot iniciado' });
   runDailyHistorialSnapshot();
 });
@@ -868,7 +988,7 @@ app.get('/api/ads', (_req, res) => {
 });
 
 /* POST /api/ads/:id/impression — registra impresión */
-app.post('/api/ads/:id/impression', (req, res) => {
+app.post('/api/ads/:id/impression', impressionLimiter, (req, res) => {
   const ad = ADVERTISEMENTS.find(a => a.id === req.params.id && a.active);
   if (!ad) return res.status(404).json({ ok: false });
   ad.impressions++;
@@ -895,7 +1015,7 @@ app.get('/api/ads/metrics', (_req, res) => {
 /* PUT /api/ads/:id/refcode — actualizar código de afiliado sin reiniciar */
 app.put('/api/ads/:id/refcode', (req, res) => {
   const key = req.headers['x-admin-key'] || req.query.key;
-  if (key !== (process.env.ADMIN_KEY || 'finrank-admin-2026'))
+  if (key !== process.env.ADMIN_KEY)
     return res.status(401).json({ ok: false, error: 'No autorizado' });
   const ad = ADVERTISEMENTS.find(a => a.id === req.params.id);
   if (!ad) return res.status(404).json({ ok: false, error: 'Anunciante no encontrado' });
